@@ -2171,6 +2171,98 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(/*#__PURE__*/React.createElement(App, null));
 const __appRoot = ReactDOM.createRoot(document.getElementById("root"));
 __appRoot.render(React.createElement(App, null));
+
+// ===== Script ausiliari: sblocco audio + wake lock (schermo sempre acceso) =====
+// Sblocca audio context al primo tap (necessario per beep su mobile)
+let audioUnlocked = false;
+document.addEventListener("touchstart", () => {
+  if (audioUnlocked) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === "suspended") ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.01);
+    audioUnlocked = true;
+  } catch (e) {}
+}, { once: true });
+
+// Wake Lock — tiene lo schermo acceso quando l'app è in primo piano
+window.__wakeLockState = {
+  supported: "wakeLock" in navigator,
+  active: false,
+  error: null,
+};
+
+let wakeLock = null;
+
+function updateWakeLockUI() {
+  const el = document.getElementById("wakelock-indicator");
+  if (!el) return;
+  const s = window.__wakeLockState;
+  if (!s.supported) {
+    el.textContent = "⚠ schermo: non supportato";
+    el.style.color = "#FF4D6D";
+  } else if (s.active) {
+    el.textContent = "● schermo sempre attivo";
+    el.style.color = "#C8F542";
+  } else if (s.error) {
+    el.textContent = "⚠ schermo: " + s.error;
+    el.style.color = "#FF4D6D";
+  } else {
+    el.textContent = "○ schermo: tocca per attivare";
+    el.style.color = "#f0c430";
+  }
+}
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    window.__wakeLockState.supported = false;
+    updateWakeLockUI();
+    return;
+  }
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    window.__wakeLockState.active = true;
+    window.__wakeLockState.error = null;
+    updateWakeLockUI();
+    wakeLock.addEventListener("release", () => {
+      window.__wakeLockState.active = false;
+      updateWakeLockUI();
+    });
+  } catch (e) {
+    window.__wakeLockState.active = false;
+    window.__wakeLockState.error = (e && e.message) ? e.message : "negato";
+    updateWakeLockUI();
+  }
+}
+
+// Lo attivo al primo tap (richiesto da Chrome per essere considerato user gesture)
+document.addEventListener("touchstart", requestWakeLock, { once: true });
+document.addEventListener("click", requestWakeLock, { once: true });
+
+// Lo riattivo quando l'app torna in primo piano
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && !window.__wakeLockState.active) {
+    requestWakeLock();
+  }
+});
+
+// HEARTBEAT: ogni 15 sec verifica che il wake lock sia ancora attivo,
+// altrimenti lo riattiva. Risolve il problema del TWA Android che lo rilascia silenziosamente.
+setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  // Se il wakeLock è null, rilasciato, o lo stato segna inattivo → riprova
+  if (!wakeLock || wakeLock.released || !window.__wakeLockState.active) {
+    requestWakeLock();
+  }
+}, 15000);
+
+// Aggiorno la UI ogni secondo per sicurezza (al caso il componente React non sia ancora montato)
+setInterval(updateWakeLockUI, 1000);
+
 </script>
 </body>
 </html>
