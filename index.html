@@ -339,9 +339,9 @@ const yt = q => `https://www.youtube.com/results?search_query=${encodeURICompone
 const days = [{
   id: "lun",
   label: "Lunedì",
-  title: "Planche + Front Lever",
-  priority: "Planche · Front Lever",
-  focus: "Doppio stimolo sulle due skills prioritarie. Massima freschezza — eseguire a inizio sessione.",
+  title: "Spinta statica",
+  priority: "Planche · HSPU",
+  focus: "Le due spinte statiche a fresco. Tendine in estensione (polso/gomito) caricate qui e isolate dai giorni di trazione.",
   warmup: [{
     name: "Flessioni scapolari",
     search: "scapular push up",
@@ -362,19 +362,19 @@ const days = [{
     name: "Planche lean",
     search: "planche lean",
     vol: "4×25\"",
-    note: "A terra — costruisce mobilità del polso e lean",
+    note: "Test: 35s con polsi a 55cm dal muro (testa che sfiora). Obiettivo NON più tempo ma LEAN: ALLONTANA i polsi dal muro tenendo i capelli che sfiorano = braccia più inclinate = più lean = più difficile. Punta a tenere 25\" aumentando i cm oltre 55.",
     priority: true
   }, {
     name: "Tuck planche (parallette)",
     search: "tuck planche parallettes",
-    vol: "3×10\"",
-    note: "Check forma: ① scapole protratte al max · ② spalle davanti ai polsi · ③ bacino sopra le spalle",
+    vol: "3×8\"",
+    note: "ANELLO DEBOLE — priorità forma. Test: 8s con schiena bassa. Obiettivo: ALZARE IL BACINO sopra le spalle. Check: ① scapole protratte ② spalle davanti ai polsi ③ bacino alto. Meglio 8s con bacino alto che 10s con schiena bassa.",
     priority: true
   }, {
-    name: "One-leg front lever",
-    search: "one leg front lever rings",
-    vol: "4×10\"",
-    note: "Gamba tesa, core compresso — prova il full FL a fine serie",
+    name: "HSPU complete chest-to-wall",
+    search: "chest to wall HSPU",
+    vol: "4×3",
+    note: "Pezzo FORZA della verticale, a fresco. Test: 2 rip complete. HSPU COMPLETE petto al muro, discesa + risalita. Obiettivo salire a 4×4-5. Quando facili, allontana di poco il petto dal muro.",
     priority: true
   }, {
     name: "Pronated grip horizontal row",
@@ -382,6 +382,17 @@ const days = [{
     vol: "4×13",
     note: "Antagonista planche — non saltarlo",
     priority: false
+  }],
+  prehab: [{
+    name: "Eccentriche polso (estensori + flessori)",
+    search: "wrist eccentric exercise",
+    note: "In quadrupedia o con un peso leggero in mano: estendi/fletti il polso e torna lentissimo (4 sec) nella fase di ritorno. Condiziona i tendini del polso sotto il carico di planche e HSPU.",
+    time: "2×12 lenti"
+  }, {
+    name: "Rotazioni esterne spalla (elastico)",
+    search: "shoulder external rotation band",
+    note: "Gomito al fianco a 90°, ruoti l'avambraccio verso l'esterno contro l'elastico. Protegge la cuffia dei rotatori dalle spinte sopra la testa.",
+    time: "2×15 per lato"
   }],
   cooldown: [{
     name: "Allungamento petto al muro",
@@ -409,7 +420,7 @@ const days = [{
   label: "Martedì",
   title: "Core e Compressione",
   priority: "V-sit · Pistol squat",
-  focus: "Focus unico: compressione attiva. 4 esercizi mirati. High L-sit tornerà quando compression hold sale a 4×15\".",
+  focus: "Focus unico: compressione attiva. 4 esercizi mirati. High L-sit tornerà quando compression hold sale a 4×15\". Cuscinetto di recupero tra i due giorni pesanti.",
   warmup: [{
     name: "Rotazioni anche",
     search: "hip circles",
@@ -440,8 +451,8 @@ const days = [{
   }, {
     name: "Leg lift in L-sit (parallette)",
     search: "L sit leg lift V sit",
-    vol: "5×6",
-    note: "Parti in L-sit, strappa le gambe il più in alto possibile, torna controllato. Quando 5×8 è pulito, sali a 5×10.",
+    vol: "5×5",
+    note: "Test: 7 rip max. Fai 5×5 STRICT con gambe tese, qualità prima del numero. Quando tutte e 5 pulite, sali a 5×6. Pausa 2s in alto se vuoi più stimolo V-sit.",
     priority: true
   }, {
     name: "Straddle L-sit",
@@ -485,162 +496,9 @@ const days = [{
 }, {
   id: "mer",
   label: "Mercoledì",
-  title: "HSPU Progressioni",
-  priority: "Flessioni in verticale (HSPU)",
-  focus: "Ogni esercizio serve la verticale. Da pike pushup elevati a negative HSPU — progressione diretta.",
-  warmup: [{
-    name: "Allungamento spalle al muro",
-    search: "wall shoulder flexion stretch",
-    note: "In ginocchio davanti a un muro, gomiti appoggiati al muro all'altezza della testa, busto piegato in avanti. Spingi il petto verso terra.",
-    time: "30 sec"
-  }, {
-    name: "Wrist circles + wrist stretches",
-    search: "wrist warmup calisthenics",
-    time: "1 min"
-  }, {
-    name: "Pike push up leggero",
-    search: "pike push up",
-    note: "Piedi a terra, anche piegate (forma a V rovesciata), abbassi la testa verso terra piegando le braccia. Versione facile da terra, è pre-attivazione.",
-    time: "5 rip."
-  }],
-  exercises: [{
-    name: "Chest-to-wall handstand",
-    search: "chest to wall handstand",
-    vol: "4×30\"",
-    note: "Petto a parete, corpo dritto — è il tuo riferimento posturale. Costruisce stabilità sotto carico.",
-    priority: true
-  }, {
-    name: "Chest-to-wall HSPU negative",
-    search: "chest to wall HSPU negative",
-    vol: "4×4",
-    note: "Negative al muro, petto attaccato. Discesa 5 sec controllati. La tua zona di crescita principale per la forza eccentrica.",
-    priority: true
-  }, {
-    name: "Chest-to-wall HSPU (ROM parziale)",
-    search: "chest to wall HSPU partial",
-    vol: "3×3",
-    note: "Dopo la negative, prova a risalire anche solo di 5 cm. Costruisce il push concentrico specifico.",
-    priority: true
-  }, {
-    name: "Negative HSPU (libera)",
-    search: "negative handstand pushup",
-    vol: "2×3",
-    note: "Versione libera, solo serie pulite. Transfer alla HSPU completa. Cuscino sotto.",
-    priority: true
-  }, {
-    name: "Pike pushup box 60cm",
-    search: "elevated pike pushup",
-    vol: "3×8",
-    note: "Accessorio — range completo, testa tra le braccia.",
-    priority: false
-  }, {
-    name: "Flessioni a diamante",
-    search: "diamond pushup",
-    vol: "3×15",
-    note: "Tricipiti — supporto diretto alle HSPU.",
-    priority: false
-  }],
-  cooldown: [{
-    name: "Allungamento petto sulla porta",
-    search: "doorway chest stretch",
-    note: "In piedi davanti a una porta, avambracci appoggiati ai due lati dello stipite ad altezza spalla. Ti sporgi in avanti.",
-    time: "30 sec"
-  }, {
-    name: "Allungamento tricipite sopra la testa",
-    search: "overhead tricep stretch",
-    note: "Un braccio sopra la testa con gomito piegato (mano dietro alla nuca), con l'altra mano spingi il gomito verso il centro.",
-    time: "30 sec per lato"
-  }, {
-    name: "Allungamento polsi (avanti e indietro)",
-    search: "wrist stretch both",
-    note: "Braccio teso davanti: con l'altra mano tiri prima il palmo verso il basso (estensori), poi verso l'alto (flessori).",
-    time: "30 sec per lato"
-  }, {
-    name: "Gatto-mucca",
-    search: "cat cow stretch",
-    note: "In quadrupedia: alternate arcuata della schiena verso l'alto (gatto, mento al petto) e incavata verso il basso (mucca, testa su).",
-    time: "1 min"
-  }]
-}, {
-  id: "gio",
-  label: "Giovedì",
-  title: "Muscle-up + Pulling",
-  priority: "Muscle-up",
-  focus: "Planche prima del pulling — deltoidi freschi. Stimolo FL protetto qui (caso venerdì salti). Poi muscle-up e pulling.",
-  warmup: [{
-    name: "Trazioni scapolari",
-    search: "scapular pull up",
-    note: "Appeso alla sbarra a braccia tese. Sali di pochi cm contraendo solo le scapole (abbassandole), senza piegare i gomiti.",
-    time: "10 rip."
-  }, {
-    name: "Apertura elastico (band pull apart)",
-    search: "band pull apart",
-    note: "Elastico teso davanti al petto con le braccia stese. Lo apri portando le mani ai lati, contraendo le scapole. Senza elastico: simula il movimento.",
-    time: "15 rip."
-  }, {
-    name: "Sospensione passiva alla sbarra",
-    search: "dead hang",
-    note: "Appeso alla sbarra a braccia tese, spalle alte (rilassate), corpo morto. Decomprime la colonna.",
-    time: "30 sec"
-  }],
-  exercises: [{
-    name: "Planche lean",
-    search: "planche lean",
-    vol: "4×20\"",
-    note: "A terra — deltoidi freschi prima del pulling (mantenimento)",
-    priority: true
-  }, {
-    name: "One-leg front lever",
-    search: "one leg front lever rings",
-    vol: "3×10\"",
-    note: "Stimolo FL protetto qui in caso il venerdì salti. Leggero, non interferisce con muscle-up.",
-    priority: true
-  }, {
-    name: "Bar muscle-up",
-    search: "strict bar muscle up",
-    vol: "4×3",
-    note: "Pieno controllo, niente kipping",
-    priority: true
-  }, {
-    name: "Chest-to-bar pull-up esplosivo",
-    search: "explosive chest to bar pullup",
-    vol: "4×4",
-    note: "Accessorio — volume dopo il muscle-up",
-    priority: false
-  }, {
-    name: "Trazioni in false grip",
-    search: "false grip pullup rings",
-    vol: "3×6",
-    note: "Base per muscle-up agli anelli in futuro",
-    priority: false
-  }],
-  cooldown: [{
-    name: "Allungamento dorsali (appeso)",
-    search: "dead hang lat stretch",
-    note: "Appeso passivo alla sbarra, spalle rilassate verso l'alto, lasci che i dorsali si allunghino sotto al tuo peso.",
-    time: "30 sec"
-  }, {
-    name: "Allungamento bicipite al muro",
-    search: "bicep stretch wall",
-    note: "In piedi di fianco a un muro, braccio teso indietro, palmo appoggiato al muro all'altezza della spalla. Ruoti il corpo via dal muro.",
-    time: "30 sec per lato"
-  }, {
-    name: "Allungamento polsi",
-    search: "wrist flexor stretch",
-    note: "In ginocchio con palmi a terra e dita verso di te. Spingi indietro fino a sentire stiramento sulla parte interna dell'avambraccio.",
-    time: "30 sec per lato"
-  }, {
-    name: "Posizione del bambino con braccia tese",
-    search: "extended child pose",
-    note: "Posizione del bambino con braccia tese davanti, palmi a terra, spingi le ascelle verso il pavimento.",
-    time: "1 min"
-  }]
-}, {
-  id: "ven",
-  label: "Venerdì",
-  title: "Front Lever + Back Lever",
+  title: "Trazione statica",
   priority: "Front Lever · Back Lever",
-  focus: "Secondo stimolo front lever. German hang e skin the cat come base obbligatoria per il back lever.",
+  focus: "Le due trazioni statiche a fresco, 48h dopo la spinta del lunedì. Tendine bicipitali riposate. Front lever principale + tutto il back lever.",
   warmup: [{
     name: "Trazioni scapolari",
     search: "scapular pull up",
@@ -660,8 +518,8 @@ const days = [{
   exercises: [{
     name: "One-leg front lever",
     search: "one leg front lever rings",
-    vol: "4×10\"",
-    note: "Secondo stimolo — sugli anelli. Prova il full FL a fine serie",
+    vol: "4×12\"",
+    note: "Test: 15s bilanciato SX/DX, gamba piegata a 90°. Stimolo FL PRINCIPALE, a fresco. Progressione: apri la gamba piegata verso lo straddle FL. Alterna SX/DX a ogni serie.",
     priority: true
   }, {
     name: "Skin the cat",
@@ -687,12 +545,17 @@ const days = [{
     vol: "4×5",
     note: "Core attivo per tutta la serie",
     priority: false
+  }],
+  prehab: [{
+    name: "Curl eccentrici lenti (anelli o elastico)",
+    search: "ring bicep curl",
+    note: "Qualunque carico (anelli inclinati, elastico, zaino): salita normale, discesa lentissima 4-5 sec. Il tendine del bicipite al gomito è la struttura più stressata da FL, BL e muscle-up: questo lo blinda.",
+    time: "3×8 lenti"
   }, {
-    name: "Row declinate",
-    search: "decline row calisthenics",
-    vol: "3×12",
-    note: "Controllo eccentrico",
-    priority: false
+    name: "Tenuta in appoggio anelli ruotati (RTO)",
+    search: "ring support hold RTO",
+    note: "In appoggio sugli anelli, palmi ruotati in avanti (RTO) il più possibile, braccia tese e ferme. Condiziona gomito e bicipite in modo specifico per gli statici.",
+    time: "3×15\""
   }],
   cooldown: [{
     name: "Allungamento spalle (braccia dietro la schiena)",
@@ -700,9 +563,9 @@ const days = [{
     note: "In piedi, intrecci le mani dietro la schiena a braccia tese, poi sollevi le braccia tese verso l'alto.",
     time: "30 sec"
   }, {
-    name: "Allungamento bicipite e spalla anteriore",
+    name: "Allungamento bicipite al muro",
     search: "bicep stretch wall",
-    note: "Stesso movimento del bicep stretch del giovedì: braccio teso indietro, palmo al muro, ruoti il corpo via.",
+    note: "In piedi di fianco a un muro, braccio teso indietro, palmo appoggiato al muro all'altezza della spalla. Ruoti il corpo via dal muro.",
     time: "30 sec per lato"
   }, {
     name: "German hang leggero",
@@ -713,6 +576,175 @@ const days = [{
     name: "Rotazione toracica (thread the needle)",
     search: "thread the needle stretch",
     note: "In quadrupedia, infili un braccio sotto al corpo verso il lato opposto fino a far appoggiare la spalla a terra, l'altro braccio resta su.",
+    time: "1 min"
+  }]
+}, {
+  id: "gio",
+  label: "Giovedì",
+  title: "Spinta volume + verticale",
+  priority: "Flessioni in verticale (HSPU)",
+  focus: "Volume di spinta: eccentrica HSPU e accessori, niente massimali (la forza è il lunedì). Planche solo in mantenimento. 48h dalla trazione.",
+  warmup: [{
+    name: "Allungamento spalle al muro",
+    search: "wall shoulder flexion stretch",
+    note: "In ginocchio davanti a un muro, gomiti appoggiati al muro all'altezza della testa, busto piegato in avanti. Spingi il petto verso terra.",
+    time: "30 sec"
+  }, {
+    name: "Wrist circles + wrist stretches",
+    search: "wrist warmup calisthenics",
+    time: "1 min"
+  }, {
+    name: "Pike push up leggero",
+    search: "pike push up",
+    note: "Piedi a terra, anche piegate (forma a V rovesciata), abbassi la testa verso terra piegando le braccia. Versione facile da terra, è pre-attivazione.",
+    time: "5 rip."
+  }],
+  exercises: [{
+    name: "Chest-to-wall handstand",
+    search: "chest to wall handstand",
+    vol: "4×30\"",
+    note: "Petto a parete, corpo dritto — è il tuo riferimento posturale. Costruisce stabilità sotto carico.",
+    priority: true
+  }, {
+    name: "Chest-to-wall HSPU negative",
+    search: "chest to wall HSPU negative",
+    vol: "3×4",
+    note: "Negative al muro, discesa lentissima 5 sec. Costruisce la forza eccentrica che alimenta le HSPU complete del lunedì.",
+    priority: true
+  }, {
+    name: "Pike pushup box 60cm",
+    search: "elevated pike pushup",
+    vol: "3×8",
+    note: "Accessorio — range completo, testa tra le braccia.",
+    priority: false
+  }, {
+    name: "Flessioni a diamante",
+    search: "diamond pushup",
+    vol: "3×15",
+    note: "Tricipiti — supporto diretto alle HSPU.",
+    priority: false
+  }, {
+    name: "Planche lean",
+    search: "planche lean",
+    vol: "4×20\"",
+    note: "Mantenimento, a fine sessione. Volume facile, niente massimali — la planche pesante è il lunedì.",
+    priority: true
+  }],
+  prehab: [{
+    name: "Eccentriche polso (estensori + flessori)",
+    search: "wrist eccentric exercise",
+    note: "In quadrupedia o con un peso leggero in mano: estendi/fletti il polso e torna lentissimo (4 sec) nella fase di ritorno. Condiziona i tendini del polso sotto il carico di HSPU e planche.",
+    time: "2×12 lenti"
+  }, {
+    name: "Rotazioni esterne spalla (elastico)",
+    search: "shoulder external rotation band",
+    note: "Gomito al fianco a 90°, ruoti l'avambraccio verso l'esterno contro l'elastico. Protegge la cuffia dei rotatori dalle spinte sopra la testa.",
+    time: "2×15 per lato"
+  }],
+  cooldown: [{
+    name: "Allungamento petto sulla porta",
+    search: "doorway chest stretch",
+    note: "In piedi davanti a una porta, avambracci appoggiati ai due lati dello stipite ad altezza spalla. Ti sporgi in avanti.",
+    time: "30 sec"
+  }, {
+    name: "Allungamento tricipite sopra la testa",
+    search: "overhead tricep stretch",
+    note: "Un braccio sopra la testa con gomito piegato (mano dietro alla nuca), con l'altra mano spingi il gomito verso il centro.",
+    time: "30 sec per lato"
+  }, {
+    name: "Allungamento polsi (avanti e indietro)",
+    search: "wrist stretch both",
+    note: "Braccio teso davanti: con l'altra mano tiri prima il palmo verso il basso (estensori), poi verso l'alto (flessori).",
+    time: "30 sec per lato"
+  }, {
+    name: "Gatto-mucca",
+    search: "cat cow stretch",
+    note: "In quadrupedia: alternate arcuata della schiena verso l'alto (gatto, mento al petto) e incavata verso il basso (mucca, testa su).",
+    time: "1 min"
+  }]
+}, {
+  id: "ven",
+  label: "Venerdì",
+  title: "Trazione dinamica + FL 2°",
+  priority: "Muscle-up · Front Lever",
+  focus: "Trazione dinamica: muscle-up e pulling. Secondo stimolo front lever della settimana, 48h dopo il mercoledì.",
+  warmup: [{
+    name: "Trazioni scapolari",
+    search: "scapular pull up",
+    note: "Appeso alla sbarra a braccia tese. Sali di pochi cm contraendo solo le scapole (abbassandole), senza piegare i gomiti.",
+    time: "10 rip."
+  }, {
+    name: "Apertura elastico (band pull apart)",
+    search: "band pull apart",
+    note: "Elastico teso davanti al petto con le braccia stese. Lo apri portando le mani ai lati, contraendo le scapole. Senza elastico: simula il movimento.",
+    time: "15 rip."
+  }, {
+    name: "Sospensione passiva alla sbarra",
+    search: "dead hang",
+    note: "Appeso alla sbarra a braccia tese, spalle alte (rilassate), corpo morto. Decomprime la colonna.",
+    time: "30 sec"
+  }],
+  exercises: [{
+    name: "Bar muscle-up",
+    search: "strict bar muscle up",
+    vol: "5×1",
+    note: "Test: 3 rip ma ultime 2 sbilanciate sul braccio destro. Soluzione: 5 SINGOLE pulite, recupero 2-3 min tra una e l'altra. Ogni rep fresca = simmetrica. Fermati se senti che diventa storta. Costruisce forza senza allenare il compenso.",
+    priority: true
+  }, {
+    name: "One-leg front lever",
+    search: "one leg front lever rings",
+    vol: "4×12\"",
+    note: "Secondo stimolo FL della settimana, 48h dopo il mercoledì. Gamba piegata a 90°, alterna SX/DX. Tienilo pulito: è richiamo, non cedimento.",
+    priority: true
+  }, {
+    name: "Chest-to-bar pull-up esplosivo",
+    search: "explosive chest to bar pullup",
+    vol: "4×4",
+    note: "Accessorio — volume dopo il muscle-up",
+    priority: false
+  }, {
+    name: "Trazioni in false grip",
+    search: "false grip pullup rings",
+    vol: "3×6",
+    note: "Base per muscle-up agli anelli in futuro",
+    priority: false
+  }, {
+    name: "Row declinate",
+    search: "decline row calisthenics",
+    vol: "3×12",
+    note: "Controllo eccentrico",
+    priority: false
+  }],
+  prehab: [{
+    name: "Curl eccentrici lenti (anelli o elastico)",
+    search: "ring bicep curl",
+    note: "Qualunque carico (anelli inclinati, elastico, zaino): salita normale, discesa lentissima 4-5 sec. Dopo muscle-up e FL il tendine del bicipite è il più affaticato: chiudere con eccentriche controllate lo rinforza.",
+    time: "3×8 lenti"
+  }, {
+    name: "Tenuta in appoggio anelli ruotati (RTO)",
+    search: "ring support hold RTO",
+    note: "In appoggio sugli anelli, palmi ruotati in avanti (RTO) il più possibile, braccia tese e ferme. Condiziona gomito e bicipite in modo specifico per gli statici.",
+    time: "3×15\""
+  }],
+  cooldown: [{
+    name: "Allungamento dorsali (appeso)",
+    search: "dead hang lat stretch",
+    note: "Appeso passivo alla sbarra, spalle rilassate verso l'alto, lasci che i dorsali si allunghino sotto al tuo peso.",
+    time: "30 sec"
+  }, {
+    name: "Allungamento bicipite al muro",
+    search: "bicep stretch wall",
+    note: "In piedi di fianco a un muro, braccio teso indietro, palmo appoggiato al muro all'altezza della spalla. Ruoti il corpo via dal muro.",
+    time: "30 sec per lato"
+  }, {
+    name: "Allungamento polsi",
+    search: "wrist flexor stretch",
+    note: "In ginocchio con palmi a terra e dita verso di te. Spingi indietro fino a sentire stiramento sulla parte interna dell'avambraccio.",
+    time: "30 sec per lato"
+  }, {
+    name: "Posizione del bambino con braccia tese",
+    search: "extended child pose",
+    note: "Posizione del bambino con braccia tese davanti, palmi a terra, spingi le ascelle verso il pavimento.",
     time: "1 min"
   }]
 }];
@@ -917,6 +949,41 @@ function parseSimpleTime(timeStr) {
   const tQuote = timeStr.match(/(\d+)["]/);
   if (tQuote) return parseInt(tQuote[1], 10);
   return null;
+}
+const CYCLE_STORAGE_KEY = "calistenia_cycle_start";
+const DELOAD_CYCLE_WEEKS = 5; // 4 settimane di carico + 1 di scarico
+function getCycleStartDate() {
+  try {
+    let stored = localStorage.getItem(CYCLE_STORAGE_KEY);
+    if (!stored) {
+      stored = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(CYCLE_STORAGE_KEY, stored);
+    }
+    return stored;
+  } catch (e) {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+function setCycleStartDate(dateStr) {
+  try {
+    localStorage.setItem(CYCLE_STORAGE_KEY, dateStr);
+  } catch (e) {}
+}
+function getCurrentWeekInfo() {
+  const startStr = getCycleStartDate();
+  const start = new Date(startStr + "T00:00:00");
+  const now = new Date();
+  const diffDays = Math.max(0, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
+  const weekNumber = Math.floor(diffDays / 7) + 1;
+  const weekInCycle = ((weekNumber - 1) % DELOAD_CYCLE_WEEKS) + 1;
+  const isDeloadWeek = weekInCycle === DELOAD_CYCLE_WEEKS;
+  return {
+    startStr,
+    weekNumber,
+    weekInCycle,
+    cycleLength: DELOAD_CYCLE_WEEKS,
+    isDeloadWeek
+  };
 }
 function beep(freq = 880, duration = 80, volume = 0.15) {
   try {
@@ -1404,6 +1471,17 @@ function SectionLabel({
 }
 function App() {
   const [active, setActive] = useState("overview");
+  const [cycleTick, setCycleTick] = useState(0);
+  const weekInfo = getCurrentWeekInfo(); // eslint-disable-line no-unused-vars
+  const [deloadOverride, setDeloadOverride] = useState(null); // null = automatico, true/false = forzato
+  const deload = deloadOverride === null ? weekInfo.isDeloadWeek : deloadOverride;
+  const handleSetCycleStart = () => {
+    const input = window.prompt("Data di inizio ciclo (AAAA-MM-GG):", weekInfo.startStr);
+    if (input && /^\d{4}-\d{2}-\d{2}$/.test(input)) {
+      setCycleStartDate(input);
+      setCycleTick(t => t + 1);
+    }
+  };
   const currentDay = days.find(d => d.id === active);
   const tabs = [{
     id: "overview",
@@ -1527,7 +1605,95 @@ function App() {
       maxWidth: 680,
       margin: "0 auto"
     }
-  }, active === "overview" && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      paddingTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDeloadOverride(deload ? false : true),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+      padding: "10px 14px",
+      background: deload ? "rgba(255,77,109,0.10)" : "#0e1016",
+      border: `1px solid ${deload ? ACCENT2 : BORDER}`,
+      borderRadius: 6,
+      color: deload ? ACCENT2 : MUTED,
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 12,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, deload ? "● Settimana di scarico attiva" : "○ Settimana di scarico"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16,
+      lineHeight: 1
+    }
+  }, deload ? "▣" : "▢")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+      marginTop: 6,
+      padding: "0 2px",
+      fontSize: 11,
+      fontFamily: "'JetBrains Mono', monospace",
+      color: MUTED
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "Settimana ", weekInfo.weekInCycle, "/", weekInfo.cycleLength, " del ciclo · totale settimana ", weekInfo.weekNumber, deloadOverride !== null && deloadOverride !== weekInfo.isDeloadWeek ? " · forzato manualmente" : ""), /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, deloadOverride !== null && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDeloadOverride(null),
+    style: {
+      background: "none",
+      border: "none",
+      color: ACCENT,
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 11,
+      textDecoration: "underline",
+      cursor: "pointer",
+      padding: 0
+    }
+  }, "torna automatico"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleSetCycleStart,
+    style: {
+      background: "none",
+      border: "none",
+      color: MUTED,
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 11,
+      textDecoration: "underline",
+      cursor: "pointer",
+      padding: 0
+    }
+  }, "imposta inizio ciclo"))), deload && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      padding: "12px 14px",
+      background: "rgba(255,77,109,0.06)",
+      border: `1px solid ${ACCENT2}40`,
+      borderLeft: `3px solid ${ACCENT2}`,
+      borderRadius: 6,
+      fontSize: 12.5,
+      lineHeight: 1.5,
+      color: TEXT,
+      fontFamily: "'JetBrains Mono', monospace"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: ACCENT2,
+      marginBottom: 6,
+      letterSpacing: 0.5
+    }
+  }, "Regole di scarico"), "Dimezza le serie di ogni esercizio (vedi il badge rosso sul volume). Nessun tentativo massimale né record: fermati con 2-3 ripetizioni di margine, o accorcia le tenute del 30%. Recuperi pieni. Ogni 5ª settimana è scarico automatico — torni più forte, non più debole.")), active === "overview" && /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1608,7 +1774,8 @@ function App() {
       borderRadius: 6,
       padding: 16
     }
-  }, /*#__PURE__*/React.createElement(SectionLabel, null, "Note Generali"), ["⏱  Recupero skills (★): 2 min. Accessori: 60 sec. Sessione target 60 min.", "⚠️  Non forzare tentativi oltre i tempi — qualità prima.", "🔁  German hang e skin the cat il venerdì non si saltano.", "📈  Ogni 4-6 settimane rivaluta i hold: se facili, +3-5 sec.", "💡  Se stanco, riduci volume del 30% invece di saltare."].map(n => /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(SectionLabel, null, "Note Generali"), ["⏱  Recupero skills (★): 2 min. Accessori: 60 sec. Sessione target 60 min.", "⚠️  Non forzare tentativi oltre i tempi — qualità prima.", "🔁  German hang e skin the cat il venerdì non si saltano.", "📈  Ogni 4-6 settimane rivaluta i hold: se facili, +3-5 sec.", "💡  Se stanco, riduci volume del 30% invece di saltare.",
+                "🔄  PRIMA SETTIMANA (dal 6/7): non forzare i massimali, riprendi il feeling. Spingi dalla 2ª settimana."].map(n => /*#__PURE__*/React.createElement("div", {
     key: n,
     style: {
       fontSize: 13,
@@ -1910,7 +2077,19 @@ function App() {
         borderRadius: 3,
         border: `1px solid ${ACCENT}20`
       }
-    }, ex.vol)), ex.note && /*#__PURE__*/React.createElement("div", {
+    }, ex.vol), deload && parsed && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        fontWeight: 700,
+        color: ACCENT2,
+        whiteSpace: "nowrap",
+        background: "rgba(255,77,109,0.10)",
+        padding: "2px 6px",
+        borderRadius: 3,
+        border: "1px solid rgba(255,77,109,0.30)"
+      }
+    }, "↓ ", Math.max(1, Math.round(parsed.sets / 2)), " serie")), ex.note && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 12,
         color: MUTED,
@@ -1927,6 +2106,72 @@ function App() {
       reps: parsed.isTime ? null : parsed.reps,
       priority: ex.priority,
       restSeconds: 120
+    }));
+  }))), currentDay.prehab && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement(SectionLabel, {
+    icon: "🩹"
+  }, "Prehab tendinea · fine sessione"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: CARD,
+      border: `1px solid ${BORDER}`,
+      borderLeft: `2px solid #f0c430`,
+      borderRadius: 6,
+      overflow: "hidden"
+    }
+  }, currentDay.prehab.map((item, i) => {
+    const secs = parseSimpleTime(item.time);
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "ex-row"
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 10,
+        marginBottom: item.note ? 4 : 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 4,
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 14
+      }
+    }, item.name), item.search && /*#__PURE__*/React.createElement(YTLink, {
+      search: item.search,
+      size: "small"
+    })), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 12,
+        color: MUTED,
+        fontFamily: "'JetBrains Mono', monospace",
+        whiteSpace: "nowrap"
+      }
+    }, item.time)), item.note && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: MUTED,
+        lineHeight: 1.45,
+        fontFamily: "'JetBrains Mono', monospace"
+      }
+    }, item.note), secs && /*#__PURE__*/React.createElement(ExerciseTimer, {
+      key: `${currentDay.id}_p_${i}`,
+      exerciseKey: `${currentDay.id}_p_${i}`,
+      totalSets: 1,
+      secondsPerSet: secs,
+      isTime: true,
+      priority: false,
+      restSeconds: 0
     }));
   }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, {
     icon: "🧘"
