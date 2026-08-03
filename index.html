@@ -1649,7 +1649,7 @@ function App() {
       marginBottom: 6,
       letterSpacing: 0.5
     }
-  }, "Regole di scarico"), "Dimezza le serie di ogni esercizio (vedi il badge rosso sul volume). Nessun tentativo massimale né record: fermati con 2-3 ripetizioni di margine, o accorcia le tenute del 30%. Recuperi pieni. Ogni 5ª settimana è scarico automatico — torni più forte, non più debole.")), active === "overview" && /*#__PURE__*/React.createElement("div", {
+  }, "Regole di scarico"), "Serie dimezzate sugli esercizi a ripetizioni, tenute isometriche ridotte del 30% — già applicato qui sotto, vedi i badge rossi sul volume. Nessun tentativo massimale né record: fermati con 2-3 ripetizioni di margine. Recuperi pieni. Ogni 5ª settimana è scarico automatico — torni più forte, non più debole.")), active === "overview" && /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1857,6 +1857,7 @@ function App() {
     }
   }, currentDay.warmup.map((item, i) => {
     const secs = parseSimpleTime(item.time);
+    const isPerSide = item.time && item.time.includes("per lato");
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       className: "ex-row"
@@ -1898,7 +1899,55 @@ function App() {
         lineHeight: 1.45,
         fontFamily: "'JetBrains Mono', monospace"
       }
-    }, item.note), secs && /*#__PURE__*/React.createElement(ExerciseTimer, {
+    }, item.note), secs && (isPerSide ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 4
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: MUTED,
+        fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 3,
+        letterSpacing: 1
+      }
+    }, "SX"), /*#__PURE__*/React.createElement(ExerciseTimer, {
+      key: `${currentDay.id}_w_${i}_sx`,
+      exerciseKey: `${currentDay.id}_w_${i}_sx`,
+      totalSets: 1,
+      secondsPerSet: secs,
+      isTime: true,
+      priority: false,
+      restSeconds: 0
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: MUTED,
+        fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 3,
+        letterSpacing: 1
+      }
+    }, "DX"), /*#__PURE__*/React.createElement(ExerciseTimer, {
+      key: `${currentDay.id}_w_${i}_dx`,
+      exerciseKey: `${currentDay.id}_w_${i}_dx`,
+      totalSets: 1,
+      secondsPerSet: secs,
+      isTime: true,
+      priority: false,
+      restSeconds: 0
+    }))) : /*#__PURE__*/React.createElement(ExerciseTimer, {
       key: `${currentDay.id}_w_${i}`,
       exerciseKey: `${currentDay.id}_w_${i}`,
       totalSets: 1,
@@ -1906,7 +1955,7 @@ function App() {
       isTime: true,
       priority: false,
       restSeconds: 0
-    }));
+    })));
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 24
@@ -2045,7 +2094,7 @@ function App() {
         borderRadius: 3,
         border: "1px solid rgba(255,77,109,0.30)"
       }
-    }, "↓ ", Math.max(1, Math.round(parsed.sets / 2)), " serie")), ex.note && /*#__PURE__*/React.createElement("div", {
+    }, parsed.isTime ? `↓ ${Math.max(5, Math.round(parsed.seconds * 0.7))}" (-30%)` : `↓ ${Math.max(1, Math.round(parsed.sets / 2))} serie`)), ex.note && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 12,
         color: MUTED,
@@ -2056,8 +2105,8 @@ function App() {
     }, ex.note), parsed && /*#__PURE__*/React.createElement(ExerciseTimer, {
       key: `${currentDay.id}_e_${i}`,
       exerciseKey: `${currentDay.id}_e_${i}`,
-      totalSets: parsed.sets,
-      secondsPerSet: parsed.isTime ? parsed.seconds : 0,
+      totalSets: deload && !parsed.isTime ? Math.max(1, Math.round(parsed.sets / 2)) : parsed.sets,
+      secondsPerSet: parsed.isTime ? (deload ? Math.max(5, Math.round(parsed.seconds * 0.7)) : parsed.seconds) : 0,
       isTime: parsed.isTime,
       reps: parsed.isTime ? null : parsed.reps,
       priority: ex.priority,
@@ -2075,6 +2124,7 @@ function App() {
     }
   }, currentDay.cooldown.map((item, i) => {
     const secs = parseSimpleTime(item.time);
+    const isPerSide = item.time && item.time.includes("per lato");
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       className: "ex-row"
@@ -2116,7 +2166,55 @@ function App() {
         lineHeight: 1.45,
         fontFamily: "'JetBrains Mono', monospace"
       }
-    }, item.note), secs && /*#__PURE__*/React.createElement(ExerciseTimer, {
+    }, item.note), secs && (isPerSide ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 4
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: MUTED,
+        fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 3,
+        letterSpacing: 1
+      }
+    }, "SX"), /*#__PURE__*/React.createElement(ExerciseTimer, {
+      key: `${currentDay.id}_c_${i}_sx`,
+      exerciseKey: `${currentDay.id}_c_${i}_sx`,
+      totalSets: 1,
+      secondsPerSet: secs,
+      isTime: true,
+      priority: false,
+      restSeconds: 0
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: MUTED,
+        fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 3,
+        letterSpacing: 1
+      }
+    }, "DX"), /*#__PURE__*/React.createElement(ExerciseTimer, {
+      key: `${currentDay.id}_c_${i}_dx`,
+      exerciseKey: `${currentDay.id}_c_${i}_dx`,
+      totalSets: 1,
+      secondsPerSet: secs,
+      isTime: true,
+      priority: false,
+      restSeconds: 0
+    }))) : /*#__PURE__*/React.createElement(ExerciseTimer, {
       key: `${currentDay.id}_c_${i}`,
       exerciseKey: `${currentDay.id}_c_${i}`,
       totalSets: 1,
@@ -2124,7 +2222,7 @@ function App() {
       isTime: true,
       priority: false,
       restSeconds: 0
-    }));
+    })));
   })))), active === "skills" && /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
