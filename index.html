@@ -99,6 +99,13 @@ input, select { font-family: inherit; }
 .logrow .setinput { width:52px; background:#0d1016; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 4px; text-align:center; font-size:13px; }
 .logrow .setlabel { font-size:10px; color:var(--muted); display:block; text-align:center; margin-bottom:2px; }
 .setwrap { display:flex; flex-direction:column; align-items:center; }
+.pistol-sets { display:flex; gap:8px; flex-wrap:wrap; width:100%; }
+.pistol-set { flex:1 1 72px; min-width:72px; background:#0d1016; border:1px solid var(--border); border-radius:5px; padding:5px; }
+.pistol-set .setlabel { margin-bottom:4px; }
+.pistol-legs { display:flex; gap:4px; }
+.pistol-leg { flex:1; min-width:0; }
+.pistol-leg .leglabel { display:block; font-size:9px; color:var(--muted); text-align:center; margin-bottom:2px; }
+.pistol-leg .setinput { width:100%; }
 .diffrow { display:flex; gap:6px; margin-top:8px; }
 .diffrow button { flex:1; padding:6px; border-radius:5px; border:1px solid var(--border); background:#0d1016; color:var(--muted); font-size:12px; }
 .diffrow button.sel { border-color: var(--accent); color: var(--accent); background: rgba(45,212,191,0.08); }
@@ -356,16 +363,42 @@ function renderDay(dayId) {
   day.exercises.forEach((ex, i) => {
     const key = exKey(day.id, ex.name);
     const totalSets = deload && ex.seconds == null ? reduceSets(ex.sets) : ex.sets;
+    const isPistol = ex.name === "Pistol squat";
     const setTargetLabel = ex.seconds != null
       ? (deload ? reduceSeconds(ex.seconds) : ex.seconds) + '"'
       : (ex.reps + " rip");
     let setsInputs = "";
-    for (let s = 0; s < totalSets; s++) {
-      setsInputs += `<div class="setwrap">
-        <span class="setlabel">S${s + 1}</span>
-        <input class="setinput" type="number" inputmode="decimal" placeholder="${ex.seconds != null ? (deload ? reduceSeconds(ex.seconds) : ex.seconds) : (deload ? "-" : ex.reps)}" data-log="${key}" data-set="${s}">
-      </div>`;
+    const placeholder = ex.seconds != null
+      ? (deload ? reduceSeconds(ex.seconds) : ex.seconds)
+      : (deload ? "-" : ex.reps);
+
+    if (isPistol) {
+      setsInputs += `<div class="pistol-sets">`;
+      for (let s = 0; s < totalSets; s++) {
+        setsInputs += `<div class="pistol-set">
+          <span class="setlabel">S${s + 1}</span>
+          <div class="pistol-legs">
+            <div class="pistol-leg">
+              <span class="leglabel">SX</span>
+              <input class="setinput" type="number" inputmode="decimal" placeholder="${placeholder}" data-log="${key}" data-set="${s}" data-leg="sx">
+            </div>
+            <div class="pistol-leg">
+              <span class="leglabel">DX</span>
+              <input class="setinput" type="number" inputmode="decimal" placeholder="${placeholder}" data-log="${key}" data-set="${s}" data-leg="dx">
+            </div>
+          </div>
+        </div>`;
+      }
+      setsInputs += `</div>`;
+    } else {
+      for (let s = 0; s < totalSets; s++) {
+        setsInputs += `<div class="setwrap">
+          <span class="setlabel">S${s + 1}</span>
+          <input class="setinput" type="number" inputmode="decimal" placeholder="${placeholder}" data-log="${key}" data-set="${s}">
+        </div>`;
+      }
     }
+
     html += `<div class="ex-card ${ex.priority ? "priority" : ""}">
       <div class="ex-head">
         <div class="ex-name">${ex.priority ? '<span class="star">★</span>' : ""}<span>${escapeHtml(ex.name)}</span>${ytLink(ex.search)}${ex.rack ? '<span class="rackbadge">🔧 rack</span>' : ""}</div>
@@ -373,7 +406,7 @@ function renderDay(dayId) {
       </div>
       ${ex.note ? `<div class="note">${escapeHtml(ex.note)}</div>` : ""}
       ${simpleTimerHtml(day.id + "_e_" + i, ex.seconds != null ? (deload ? reduceSeconds(ex.seconds) : ex.seconds) : 0)}
-      <div class="logrow">${setsInputs}<span style="font-size:11px;color:var(--muted)">${ex.seconds != null ? "sec" : "rip"} · target ${setTargetLabel}</span></div>
+      <div class="logrow">${setsInputs}<span style="font-size:11px;color:var(--muted)">${ex.seconds != null ? "sec" : "rip"} · target ${setTargetLabel}${isPistol ? " per gamba" : ""}</span></div>
       <div class="diffrow" data-diffgroup="${key}">
         <button data-act="set-diff" data-key="${key}" data-val="facile">🟢 Facile</button>
         <button data-act="set-diff" data-key="${key}" data-val="giusto">🟡 Giusto</button>
@@ -432,13 +465,24 @@ function renderHistory() {
         ${(s.entries || []).map(en => `
           <div class="hist-ex">
             <div class="hexname">${escapeHtml(en.name)}</div>
-            <div class="hexvals">Target: ${en.target} · Fatto: ${en.values.filter(v => v !== null && v !== "").join(", ") || "—"}</div>
+            <div class="hexvals">Target: ${en.target} · Fatto: ${en.name === "Pistol squat" ? formatPistolHistory(en.values) : (en.values.filter(v => v !== null && v !== "").join(", ") || "—")}</div>
             ${en.difficulty ? `<div class="hexdiff">${en.difficulty === "facile" ? "🟢 Facile" : en.difficulty === "duro" ? "🔴 Duro" : "🟡 Giusto"}</div>` : ""}
           </div>`).join("")}
       </div>
     </div>`;
   });
   return html;
+}
+
+function formatPistolHistory(values) {
+  const vals = Array.isArray(values) ? values : [];
+  const parts = [];
+  for (let i = 0; i < vals.length; i += 2) {
+    const sx = vals[i], dx = vals[i + 1];
+    if ((sx === "" || sx == null) && (dx === "" || dx == null)) continue;
+    parts.push(`S${i / 2 + 1}: SX ${sx || "—"} · DX ${dx || "—"}`);
+  }
+  return parts.join(" | ") || "—";
 }
 
 // ============ Charts view ============
