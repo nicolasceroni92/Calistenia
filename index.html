@@ -86,6 +86,8 @@ input, select { font-family: inherit; }
 .timerbox { margin-top:10px; background:#0d1016; border:1px solid var(--border); border-radius:6px; padding:10px; }
 .timerbox .display { font-size:28px; font-weight:700; text-align:center; letter-spacing:1px; }
 .timerbox .sub { text-align:center; font-size:11px; color:var(--muted); margin-top:2px; }
+.timerbox .phase { text-align:center; font-size:11px; color:var(--accent); margin-top:4px; min-height:16px; }
+.timerbox.prep .display { color:var(--gold); }
 .timerbox .controls { display:flex; gap:8px; margin-top:8px; }
 .timerbox button { flex:1; background:#171b24; border:1px solid var(--border); color:var(--text); padding:8px; border-radius:5px; font-size:12px; }
 .timerbox button.primary { background: var(--accent); color:#04211d; border-color: var(--accent); font-weight:700; }
@@ -326,8 +328,9 @@ function itemTimerHtml(item, idPrefix, idx) {
   return simpleTimerHtml(idPrefix + "_" + idx, secs);
 }
 function simpleTimerHtml(tid, secs) {
-  return `<div class="timerbox" data-timer="${tid}" data-secs="${secs}">
+  return `<div class="timerbox" data-timer="${tid}" data-secs="${secs}" data-prep="10">
     <div class="display">${fmtClock(secs)}</div>
+    <div class="phase">Pronto: 10s</div>
     <div class="controls">
       <button data-act="timer-start" data-tid="${tid}">▶ Avvia</button>
       <button data-act="timer-reset" data-tid="${tid}">↺</button>
@@ -559,38 +562,122 @@ function svgLineChart(points, target, unit) {
 }
 
 // ============ Timer engine ============
-const timers = {}; // tid -> { remaining, total, interval, running }
+const timers = {};
+
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.lang = "it-IT";
+    u.rate = 1.05;
+    u.volume = 1;
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function announceExerciseSecond(sec) {
+  if (sec > 0 && (sec <= 5 || sec % 5 === 0)) speak(sec);
+}
+
 function timerToggle(tid) {
   const box = document.querySelector(`[data-timer="${tid}"]`);
   if (!box) return;
+
   const total = parseInt(box.dataset.secs, 10);
-  if (!timers[tid]) timers[tid] = { remaining: total, total, interval: null, running: false };
+  const prepTotal = parseInt(box.dataset.prep || "10", 10);
+
+  if (!timers[tid]) {
+    timers[tid] = {
+      remaining: total,
+      total,
+      prep: prepTotal,
+      interval: null,
+      running: false,
+      phase: "prep"
+    };
+  }
+
   const t = timers[tid];
+
   if (t.running) {
-    clearInterval(t.interval); t.running = false;
+    clearInterval(t.interval);
+    t.running = false;
     box.querySelector('[data-act="timer-start"]').textContent = "▶ Avvia";
     return;
   }
+
+  if (t.phase === "done") {
+    t.remaining = total;
+    t.prep = prepTotal;
+    t.phase = "prep";
+  }
+
   t.running = true;
   box.querySelector('[data-act="timer-start"]').textContent = "⏸ Pausa";
+  box.classList.toggle("prep", t.phase === "prep");
+
+  if (t.phase === "prep") {
+    box.querySelector(".display").textContent = fmtClock(t.prep);
+    box.querySelector(".phase").textContent = "Preparati";
+    speak("Preparati");
+  }
+
   t.interval = setInterval(() => {
+    if (t.phase === "prep") {
+      t.prep -= 1;
+      box.querySelector(".display").textContent = fmtClock(t.prep);
+
+      if (t.prep <= 3 && t.prep > 0) speak(t.prep);
+
+      if (t.prep <= 0) {
+        t.phase = "work";
+        box.classList.remove("prep");
+        box.querySelector(".display").textContent = fmtClock(t.remaining);
+        box.querySelector(".phase").textContent = "Vai";
+        speak("Via");
+      }
+      return;
+    }
+
     t.remaining -= 1;
-    if (t.remaining <= 3 && t.remaining > 0) beep(660, 90, 0.12);
+    box.querySelector(".display").textContent = fmtClock(t.remaining);
+    box.querySelector(".phase").textContent = t.remaining > 0 ? "Lavoro" : "Fine";
+
+    // 10, 5, then every second for the final 5 seconds.
+    if (t.remaining > 0) announceExerciseSecond(t.remaining);
+
     if (t.remaining <= 0) {
-      beep(880, 300, 0.18);
-      clearInterval(t.interval); t.running = false; t.remaining = 0;
+      speak("Fine");
+      clearInterval(t.interval);
+      t.running = false;
+      t.phase = "done";
       box.querySelector('[data-act="timer-start"]').textContent = "▶ Avvia";
     }
-    box.querySelector(".display").textContent = fmtClock(t.remaining);
   }, 1000);
 }
+
 function timerReset(tid) {
   const box = document.querySelector(`[data-timer="${tid}"]`);
   if (!box) return;
-  if (timers[tid]) { clearInterval(timers[tid].interval); }
+
+  if (timers[tid]) clearInterval(timers[tid].interval);
+
   const total = parseInt(box.dataset.secs, 10);
-  timers[tid] = { remaining: total, total, interval: null, running: false };
+  const prep = parseInt(box.dataset.prep || "10", 10);
+
+  timers[tid] = {
+    remaining: total,
+    total,
+    prep,
+    interval: null,
+    running: false,
+    phase: "prep"
+  };
+
+  box.classList.add("prep");
   box.querySelector(".display").textContent = fmtClock(total);
+  box.querySelector(".phase").textContent = "Pronto: 10s";
   box.querySelector('[data-act="timer-start"]').textContent = "▶ Avvia";
 }
 
