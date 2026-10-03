@@ -178,6 +178,19 @@ input, select { font-family: inherit; }
 .savebtn:disabled { opacity:0.5; }
 .saved-note { text-align:center; font-size:12px; color:var(--muted); margin-top:8px; }
 
+/* ---------- Cloud ---------- */
+.cloud-card { display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-top:4px; }
+.cloud-card .cl-ic { flex:none; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--card2); color:var(--muted); }
+.cloud-card .cl-ic svg { width:20px; height:20px; }
+.cloud-card.on .cl-ic { background:var(--accent-soft); color:var(--accent); }
+.cloud-card.err .cl-ic { background:var(--accent2-soft); color:var(--accent2); }
+.cloud-card .cl-body { flex:1; min-width:0; }
+.cloud-card .cl-title { font-size:14px; font-weight:700; }
+.cloud-card .cl-sub { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.cloud-card .cl-actions { display:flex; gap:6px; flex:none; }
+.cloud-card button { background:var(--card2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:7px 12px; font-size:13px; font-weight:700; }
+.cloud-card button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+
 /* ---------- History ---------- */
 .hist-entry { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; }
 .hist-entry .hhead { display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer; }
@@ -218,7 +231,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.0";
+const APP_VERSION = "2.1";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -270,9 +283,11 @@ function upsertSession(session) {
   const idx = list.findIndex(s => s.date === session.date && s.dayId === session.dayId);
   if (idx >= 0) list[idx] = session; else list.push(session);
   saveSessions(list);
+  enqueueSync("save", session.date, session.dayId);
 }
 function deleteSession(date, dayId) {
   saveSessions(getSessions().filter(s => !(s.date === date && s.dayId === dayId)));
+  enqueueSync("delete", date, dayId);
 }
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 function fmtDateIt(dstr) {
@@ -596,9 +611,9 @@ function escapeHtml(s) {
 function renderHistory() {
   const sessions = getSessions().slice().sort((a, b) => b.date.localeCompare(a.date));
   if (sessions.length === 0) {
-    return `<div class="section-label">Storico</div><div class="empty-state">Nessuna sessione registrata ancora.<br>Vai su una giornata e premi "Salva sessione" dopo l'allenamento.</div>`;
+    return `${renderCloudCard()}<div class="section-label">Storico</div><div class="empty-state">Nessuna sessione registrata ancora.<br>Vai su una giornata e premi "Salva sessione" dopo l'allenamento.</div>`;
   }
-  let html = `<div class="section-label">Storico<span class="count">${sessions.length} ${sessions.length === 1 ? "sessione" : "sessioni"}</span></div>`;
+  let html = `${renderCloudCard()}<div class="section-label">Storico<span class="count">${sessions.length} ${sessions.length === 1 ? "sessione" : "sessioni"}</span></div>`;
   sessions.forEach(s => {
     const day = DAYS.find(d => d.id === s.dayId);
     const openKey = s.date + "::" + s.dayId;
@@ -956,6 +971,9 @@ function onAction(e) {
     }
   }
   else if (act === "save-session") { saveCurrentDay(t.dataset.day); }
+  else if (act === "cloud-login") { cloudLogin(); }
+  else if (act === "cloud-logout") { cloudLogout(); }
+  else if (act === "cloud-sync") { cloudFullSync(); }
 }
 el.addEventListener("change", e => {
   if (e.target.matches('[data-act="chart-select"]')) {
@@ -1014,7 +1032,234 @@ function prefillDay() {
   el.querySelectorAll('.timerbox[data-mode="rest"]').forEach(repSubUpdate);
 }
 
+// ============ Cloud (Supabase) ============
+// localStorage resta la fonte principale (funziona offline); le modifiche vanno in coda
+// e vengono inviate a Supabase quando c'è connessione e l'utente ha fatto l'accesso.
+const SUPABASE_URL = "https://wincuaxwzukjcpzmdfmr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_d-XZZshAh7u2cQBsDHGVKw_8YBaxajl";
+const SUPABASE_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+const LS_SYNC_QUEUE = "ct_sync_queue";
+const LS_SYNC_LAST = "ct_sync_last";
+const ICON_CLOUD = svgIcon('<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4.5 4.5 0 0 1-.5 9.5z"/>');
+const cloud = { client: null, user: null, busy: false, error: null };
+let syncTimer = null;
+
+function cloudEnabled() { return !!(SUPABASE_URL && SUPABASE_KEY); }
+function getSyncQueue() { try { return JSON.parse(lsGet(LS_SYNC_QUEUE) || "[]"); } catch (e) { return []; } }
+function setSyncQueue(q) { lsSet(LS_SYNC_QUEUE, JSON.stringify(q)); }
+
+function enqueueSync(op, date, dayId) {
+  if (!cloudEnabled()) return;
+  const q = getSyncQueue().filter(x => !(x.date === date && x.dayId === dayId));
+  q.push({ op, date, dayId });
+  setSyncQueue(q);
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(flushSync, 1500);
+}
+
+function weekInfoFor(dateStr) {
+  const start = new Date(getCycleStartDate() + "T00:00:00");
+  const diffDays = Math.max(0, Math.floor((new Date(dateStr + "T00:00:00") - start) / 86400000));
+  const weekNumber = Math.floor(diffDays / 7) + 1;
+  return { weekNumber, weekInCycle: ((weekNumber - 1) % DELOAD_CYCLE_WEEKS) + 1 };
+}
+
+function exerciseByKey(dayId, key) {
+  const day = DAYS.find(d => d.id === dayId);
+  return day ? day.exercises.find(ex => exKey(dayId, ex.name) === key) : null;
+}
+
+// Sessione locale -> payload per save_session (una voce per ogni serie compilata)
+function sessionToPayload(sess) {
+  const wi = weekInfoFor(sess.date);
+  return {
+    date: sess.date, dayId: sess.dayId, deload: !!sess.deload,
+    weekNumber: wi.weekNumber, weekInCycle: wi.weekInCycle,
+    entries: (sess.entries || []).map(en => {
+      const ex = exerciseByKey(sess.dayId, en.key);
+      const isPistol = en.name === "Pistol squat";
+      const sets = [];
+      (en.values || []).forEach((v, i) => {
+        const n = parseFloat(v);
+        if (isNaN(n)) return;
+        sets.push(isPistol
+          ? { set: Math.floor(i / 2) + 1, leg: i % 2 === 0 ? "sx" : "dx", value: n }
+          : { set: i + 1, leg: null, value: n });
+      });
+      return { key: en.key, name: en.name, target: en.target, unit: ex && ex.seconds != null ? "sec" : "rip", difficulty: en.difficulty || null, sets };
+    })
+  };
+}
+
+// Righe Supabase -> sessione locale (stesso formato di saveCurrentDay)
+function remoteToSession(row) {
+  const day = DAYS.find(d => d.id === row.day_id);
+  const exercises = day ? day.exercises : [];
+  return {
+    date: row.date, dayId: row.day_id, deload: row.deload,
+    entries: exercises.map(ex => {
+      const key = exKey(row.day_id, ex.name);
+      const logs = (row.set_logs || []).filter(l => l.exercise_key === key);
+      const fb = (row.exercise_feedback || []).find(f => f.exercise_key === key);
+      const isPistol = ex.name === "Pistol squat";
+      const values = [];
+      logs.forEach(l => {
+        const idx = isPistol ? (l.set_number - 1) * 2 + (l.leg === "dx" ? 1 : 0) : l.set_number - 1;
+        values[idx] = String(Number(l.value));
+      });
+      for (let i = 0; i < values.length; i++) if (values[i] === undefined) values[i] = "";
+      return { key, name: ex.name, target: logs[0] ? logs[0].target : "", values, difficulty: fb ? fb.difficulty : null };
+    })
+  };
+}
+
+function loadSupabaseLib() {
+  return new Promise((resolve, reject) => {
+    if (window.supabase) return resolve(window.supabase);
+    const sc = document.createElement("script");
+    sc.src = SUPABASE_LIB;
+    sc.onload = () => resolve(window.supabase);
+    sc.onerror = () => reject(new Error("libreria non raggiungibile"));
+    document.head.appendChild(sc);
+  });
+}
+
+async function initCloud() {
+  if (!cloudEnabled()) return;
+  try {
+    const lib = await loadSupabaseLib();
+    cloud.client = lib.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    cloud.client.auth.onAuthStateChange((event, session) => {
+      const wasOut = !cloud.user;
+      cloud.user = session ? session.user : null;
+      if (cloud.user && wasOut) cloudFullSync();
+      refreshCloudCard();
+    });
+    const { data } = await cloud.client.auth.getSession();
+    cloud.user = data.session ? data.session.user : null;
+    refreshCloudCard();
+    if (cloud.user) cloudFullSync();
+  } catch (e) {
+    cloud.error = "Offline: sincronizzo appena torna la rete";
+    refreshCloudCard();
+  }
+}
+
+async function flushSync() {
+  if (!cloud.client || !cloud.user || cloud.busy || !navigator.onLine) return;
+  cloud.busy = true; cloud.error = null; refreshCloudCard();
+  try {
+    let q = getSyncQueue();
+    while (q.length) {
+      const item = q[0];
+      if (item.op === "delete") {
+        const { error } = await cloud.client.rpc("delete_session", { p_date: item.date, p_day_id: item.dayId });
+        if (error) throw error;
+      } else {
+        const sess = getSessions().find(x => x.date === item.date && x.dayId === item.dayId);
+        if (sess) {
+          const { error } = await cloud.client.rpc("save_session", { payload: sessionToPayload(sess) });
+          if (error) throw error;
+        }
+      }
+      // rilegge la coda: nel frattempo potrebbero essere arrivate nuove modifiche
+      q = getSyncQueue();
+      if (q.length && q[0].date === item.date && q[0].dayId === item.dayId && q[0].op === item.op) q.shift();
+      setSyncQueue(q);
+    }
+    lsSet(LS_SYNC_LAST, new Date().toISOString());
+  } catch (e) {
+    cloud.error = "Errore di sincronizzazione: " + (e.message || e);
+  }
+  cloud.busy = false;
+  refreshCloudCard();
+}
+
+// Primo accesso / sync manuale: scarica le sessioni che mancano in locale e carica tutte quelle locali.
+async function cloudFullSync() {
+  if (!cloud.client || !cloud.user || cloud.busy) return;
+  cloud.busy = true; cloud.error = null; refreshCloudCard();
+  try {
+    const { data, error } = await cloud.client.from("sessions")
+      .select("date, day_id, deload, set_logs(exercise_key, set_number, leg, value, target), exercise_feedback(exercise_key, difficulty)");
+    if (error) throw error;
+    const local = getSessions();
+    const remoteKeys = new Set();
+    let added = 0;
+    (data || []).forEach(row => {
+      remoteKeys.add(row.date + "::" + row.day_id);
+      if (!local.some(s => s.date === row.date && s.dayId === row.day_id)) { local.push(remoteToSession(row)); added++; }
+    });
+    if (added) saveSessions(local);
+    // le sessioni locali che il cloud non ha vanno caricate
+    const q = getSyncQueue();
+    local.forEach(s => {
+      if (!remoteKeys.has(s.date + "::" + s.dayId) && !q.some(x => x.date === s.date && x.dayId === s.dayId)) q.push({ op: "save", date: s.date, dayId: s.dayId });
+    });
+    setSyncQueue(q);
+    cloud.busy = false;
+    if (added && state.tab !== "day") render();
+    await flushSync();
+  } catch (e) {
+    cloud.busy = false;
+    cloud.error = "Errore di sincronizzazione: " + (e.message || e);
+    refreshCloudCard();
+  }
+}
+
+async function cloudLogin() {
+  if (!cloud.client) { alert("Connessione al cloud non disponibile: riprova quando sei online."); return; }
+  const email = (window.prompt("Email per l'accesso:") || "").trim();
+  if (!email) return;
+  const { error } = await cloud.client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+  if (error) { alert("Invio non riuscito: " + error.message); return; }
+  const code = (window.prompt("Ti ho mandato un'email.\nInserisci qui il codice ricevuto, oppure apri il link nell'email da questo dispositivo.") || "").trim();
+  if (!code) return;
+  const res = await cloud.client.auth.verifyOtp({ email, token: code, type: "email" });
+  if (res.error) alert("Codice non valido: " + res.error.message);
+}
+
+async function cloudLogout() {
+  if (!cloud.client || !window.confirm("Disconnettere il cloud? I dati restano su questo dispositivo.")) return;
+  await cloud.client.auth.signOut();
+  cloud.user = null;
+  refreshCloudCard();
+}
+
+function renderCloudCard() {
+  if (!cloudEnabled()) return "";
+  const pending = getSyncQueue().length;
+  let cls = "", title, sub, actions;
+  if (!cloud.user) {
+    title = "Backup nel cloud";
+    sub = cloud.error || "Accedi per salvare e sincronizzare lo storico";
+    actions = `<button class="primary" data-act="cloud-login">Accedi</button>`;
+  } else {
+    const last = lsGet(LS_SYNC_LAST);
+    cls = cloud.error ? "err" : "on";
+    title = cloud.busy ? "Sincronizzazione…" : cloud.error ? "Da sincronizzare" : pending ? `${pending} modifiche in attesa` : "Sincronizzato";
+    sub = cloud.error || (cloud.user.email + (last ? " · " + new Date(last).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : ""));
+    actions = `<button data-act="cloud-sync">↻</button><button data-act="cloud-logout">Esci</button>`;
+  }
+  return `<div class="cloud-card ${cls}" id="cloudCard">
+    <div class="cl-ic">${ICON_CLOUD}</div>
+    <div class="cl-body"><div class="cl-title">${escapeHtml(title)}</div><div class="cl-sub">${escapeHtml(sub)}</div></div>
+    <div class="cl-actions">${actions}</div>
+  </div>`;
+}
+function refreshCloudCard() {
+  const card = document.getElementById("cloudCard");
+  if (!card) return;
+  card.outerHTML = renderCloudCard();
+  const fresh = document.getElementById("cloudCard");
+  if (fresh) fresh.querySelectorAll("[data-act]").forEach(n => n.addEventListener("click", onAction));
+}
+
+window.addEventListener("online", flushSync);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") flushSync(); });
+
 render();
+initCloud();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
