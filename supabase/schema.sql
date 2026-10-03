@@ -61,6 +61,7 @@ create or replace function public.save_session(payload jsonb)
 returns bigint
 language plpgsql
 security invoker
+set search_path = ''
 as $$
 declare
   sid bigint;
@@ -99,6 +100,7 @@ create or replace function public.delete_session(p_date date, p_day_id text)
 returns void
 language sql
 security invoker
+set search_path = ''
 as $$
   delete from public.sessions where user_id = auth.uid() and date = p_date and day_id = p_day_id;
 $$;
