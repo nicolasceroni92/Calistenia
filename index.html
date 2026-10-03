@@ -199,6 +199,23 @@ input, select { font-family: inherit; }
 .hist-ex .hexvals { color:var(--muted); margin-top:2px; font-variant-numeric: tabular-nums; }
 .empty-state { text-align:center; color:var(--muted); padding:48px 24px; font-size:14px; line-height:1.6; background:var(--card); border:1px dashed var(--border-strong); border-radius:var(--radius); }
 
+/* ---------- Reports ---------- */
+.report { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px; }
+.report.latest { border-color: rgba(198,244,50,0.3); }
+.report .rhead { display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer; }
+.report .rtitle { font-size:15px; font-weight:700; }
+.report .rsub { font-size:12px; color:var(--muted); margin-top:1px; }
+.report .rbody { margin-top:12px; border-top:1px solid var(--border); padding-top:4px; font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
+.report .rbody h3 { font-size:15px; font-weight:800; margin:14px 0 6px; }
+.report .rbody h4 { font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--accent); margin:16px 0 6px; }
+.report .rbody p { margin:8px 0; color:var(--text); }
+.report .rbody ul, .report .rbody ol { margin:6px 0; padding-left:20px; }
+.report .rbody li { margin:5px 0; }
+.report .rbody b { color:var(--text); }
+.report .rbody code { font-size:13px; background:var(--inset); padding:1px 5px; border-radius:6px; }
+.tabbar button { position:relative; }
+.tabbar .dot { position:absolute; top:6px; left:calc(50% + 8px); width:8px; height:8px; border-radius:50%; background:var(--accent2); }
+
 /* ---------- Charts ---------- */
 select.exsel { width:100%; padding:12px 14px; background:var(--card); border:1px solid var(--border-strong); color:var(--text); border-radius:12px; font-size:15px; font-weight:600; margin-bottom:14px; }
 .chart-stats { display:flex; gap:10px; margin-top:12px; }
@@ -221,7 +238,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.4";
+const APP_VERSION = "2.5";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -326,10 +343,11 @@ function tick() { beep(1000, 40, 0.12); }
 
 // ============ App state ============
 const state = {
-  tab: "week",       // week | day | history | charts
+  tab: "week",       // week | day | history | charts | reports
   dayId: null,
   showDeloadRules: false,
   historyOpen: {},   // "date::dayId" -> bool
+  reportOpen: {},    // week_start -> bool (l'ultimo report è aperto di default)
   chartExKey: null
 };
 
@@ -341,6 +359,7 @@ function render() {
   else if (state.tab === "day") html += renderDay(state.dayId);
   else if (state.tab === "history") html += renderHistory();
   else if (state.tab === "charts") html += renderCharts();
+  else if (state.tab === "reports") html += renderReports();
   html += renderTabbar();
   el.innerHTML = html;
   wireEvents();
@@ -576,6 +595,7 @@ const ICON_CAL = svgIcon('<rect x="3" y="4.5" width="18" height="16" rx="3"/><pa
 const ICON_LIST = svgIcon('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>');
 const ICON_CHART = svgIcon('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-7"/>');
 const ICON_WRENCH = svgIcon('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>');
+const ICON_NOTE = svgIcon('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>');
 const ICON_TRASH = svgIcon('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>');
 
 // ============ Tab bar ============
@@ -583,9 +603,10 @@ function renderTabbar() {
   const tabs = [
     { id: "week", ic: ICON_CAL, label: "Settimana" },
     { id: "history", ic: ICON_LIST, label: "Storico" },
-    { id: "charts", ic: ICON_CHART, label: "Grafici" }
+    { id: "charts", ic: ICON_CHART, label: "Grafici" },
+    { id: "reports", ic: ICON_NOTE, label: "Analisi", dot: hasUnseenReport() }
   ];
-  return `<div class="tabbar">${tabs.map(t => `<button class="${state.tab === t.id || (state.tab === "day" && t.id === "week") ? "active" : ""}" data-act="tab" data-tab="${t.id}">${t.ic}${t.label}</button>`).join("")}</div>`;
+  return `<div class="tabbar">${tabs.map(t => `<button class="${state.tab === t.id || (state.tab === "day" && t.id === "week") ? "active" : ""}" data-act="tab" data-tab="${t.id}">${t.ic}${t.label}${t.dot ? '<span class="dot"></span>' : ""}</button>`).join("")}</div>`;
 }
 
 function escapeHtml(s) {
@@ -921,7 +942,17 @@ function wireEvents() {
 function onAction(e) {
   const t = e.currentTarget;
   const act = t.dataset.act;
-  if (act === "tab") { state.tab = t.dataset.tab; render(); }
+  if (act === "tab") {
+    state.tab = t.dataset.tab;
+    if (state.tab === "reports") { markReportsSeen(); fetchReports(); }
+    render();
+  }
+  else if (act === "report-toggle") {
+    const w = t.dataset.week;
+    const isLatest = getReports()[0]?.week_start === w;
+    state.reportOpen[w] = !(state.reportOpen[w] ?? isLatest);
+    render();
+  }
   else if (act === "open-day") { state.dayId = t.dataset.day; state.tab = "day"; render(); }
   else if (act === "back-week") { state.tab = "week"; render(); }
   else if (act === "toggle-deload") {
@@ -1170,6 +1201,7 @@ async function cloudFullSync() {
     cloud.busy = false;
     if (added && state.tab !== "day") render();
     await flushSync();
+    fetchReports();
   } catch (e) {
     cloud.busy = false;
     cloud.error = "Errore di sincronizzazione: " + (e.message || e);
@@ -1191,6 +1223,100 @@ async function cloudLogout() {
   await cloud.client.auth.signOut();
   cloud.user = null;
   refreshCloudCard();
+}
+
+// ============ Analisi settimanali ============
+// I report li scrive l'analisi automatica della domenica nella tabella weekly_reports;
+// l'app li scarica e li tiene in locale per leggerli anche offline.
+const LS_REPORTS = "ct_reports";
+const LS_REPORT_SEEN = "ct_report_seen";
+
+function getReports() { try { return JSON.parse(lsGet(LS_REPORTS) || "[]"); } catch (e) { return []; } }
+function hasUnseenReport() {
+  const r = getReports();
+  return r.length > 0 && r[0].week_start !== lsGet(LS_REPORT_SEEN);
+}
+function markReportsSeen() {
+  const r = getReports();
+  if (r.length) lsSet(LS_REPORT_SEEN, r[0].week_start);
+}
+
+async function fetchReports() {
+  if (!cloud.client || !cloud.user || !navigator.onLine) return;
+  try {
+    const { data, error } = await cloud.client.from("weekly_reports")
+      .select("week_start, content, created_at").order("week_start", { ascending: false }).limit(20);
+    if (error) return; // tabella non ancora creata o rete assente: si riprova al prossimo avvio
+    const before = lsGet(LS_REPORTS) || "[]";
+    const after = JSON.stringify(data || []);
+    if (before === after) return;
+    lsSet(LS_REPORTS, after);
+    if (state.tab === "reports") markReportsSeen();
+    if (state.tab !== "day") render();
+  } catch (e) {}
+}
+
+function reportWeekLabel(weekStart) {
+  const a = new Date(weekStart + "T00:00:00");
+  const b = new Date(a); b.setDate(a.getDate() + 6);
+  const f = d => d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+  return `${f(a)} – ${f(b)}`;
+}
+
+// Markdown minimo: titoli, elenchi puntati/numerati, grassetto, codice, paragrafi.
+function mdInline(s) {
+  return escapeHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+function mdToHtml(md) {
+  const lines = String(md || "").replace(/\r/g, "").split("\n");
+  let html = "", list = null, para = [];
+  const flushPara = () => { if (para.length) { html += `<p>${para.map(mdInline).join("<br>")}</p>`; para = []; } };
+  const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+  lines.forEach((raw, i) => {
+    const line = raw.trimEnd();
+    let m;
+    if (!line.trim()) { flushPara(); closeList(); return; }
+    if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
+      flushPara(); closeList();
+      if (m[1].length === 1 && i === 0) return; // il titolo è già nell'intestazione della card
+      html += m[1].length <= 1 ? `<h3>${mdInline(m[2])}</h3>` : `<h4>${mdInline(m[2])}</h4>`;
+      return;
+    }
+    if ((m = line.match(/^\s*[-*]\s+(.*)$/)) || (m = line.match(/^\s*\d+[.)]\s+(.*)$/))) {
+      flushPara();
+      const kind = /^\s*\d/.test(line) ? "ol" : "ul";
+      if (list !== kind) { closeList(); html += `<${kind}>`; list = kind; }
+      html += `<li>${mdInline(m[1])}</li>`;
+      return;
+    }
+    closeList();
+    para.push(line.trim());
+  });
+  flushPara(); closeList();
+  return html;
+}
+
+function renderReports() {
+  const reports = getReports();
+  let html = `${renderCloudCard()}<div class="section-label">Analisi settimanale${reports.length ? `<span class="count">${reports.length}</span>` : ""}</div>`;
+  if (!reports.length) {
+    html += `<div class="empty-state">Nessuna analisi ancora.<br>Ogni domenica sera arriva qui il riepilogo della settimana con i consigli per la successiva.${cloud.user ? "" : "<br>Accedi al cloud per riceverlo."}</div>`;
+    return html;
+  }
+  reports.forEach((r, i) => {
+    const open = state.reportOpen[r.week_start] ?? i === 0;
+    const created = r.created_at ? new Date(r.created_at).toLocaleString("it-IT", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+    html += `<div class="report ${i === 0 ? "latest" : ""}">
+      <div class="rhead" data-act="report-toggle" data-week="${r.week_start}">
+        <div><div class="rtitle">Settimana ${escapeHtml(reportWeekLabel(r.week_start))}</div><div class="rsub">${i === 0 ? "Ultima analisi · " : ""}${escapeHtml(created)}</div></div>
+        <div class="chev">${open ? "−" : "+"}</div>
+      </div>
+      ${open ? `<div class="rbody">${mdToHtml(r.content)}</div>` : ""}
+    </div>`;
+  });
+  return html;
 }
 
 function renderCloudCard() {

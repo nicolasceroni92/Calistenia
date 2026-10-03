@@ -99,3 +99,20 @@ from public.set_logs l
 join public.sessions s on s.id = l.session_id;
 
 drop table if exists public.exercise_feedback;
+
+-- Report dell'analisi settimanale (scritti dall'analisi automatica della domenica, letti dall'app).
+-- Una riga per settimana: week_start è il lunedì. L'app può solo leggere i propri report.
+create table if not exists public.weekly_reports (
+  id          bigint generated always as identity primary key,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  week_start  date not null,
+  content     text not null,                -- testo in Markdown
+  created_at  timestamptz not null default now(),
+  unique (user_id, week_start)
+);
+
+alter table public.weekly_reports enable row level security;
+
+drop policy if exists "own weekly_reports" on public.weekly_reports;
+create policy "own weekly_reports" on public.weekly_reports for select
+  using (user_id = auth.uid());
