@@ -165,13 +165,6 @@ input, select { font-family: inherit; }
 .pistol-leg { flex:1; min-width:0; }
 .pistol-leg .leglabel { display:block; font-size:10px; font-weight:700; color:var(--faint); text-align:center; margin-bottom:3px; }
 .pistol-leg .setinput { width:100%; height:42px; }
-.diffrow { display:flex; gap:4px; margin-top:12px; padding:4px; background:var(--inset); border:1px solid var(--border); border-radius:12px; }
-.diffrow button { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 4px; border-radius:9px; border:none; background:none; color:var(--muted); font-size:13px; font-weight:600; transition: background .15s, color .15s; }
-.diffrow button::before { content:""; width:8px; height:8px; border-radius:50%; }
-.diffrow button[data-val="facile"]::before { background:#4ade80; }
-.diffrow button[data-val="giusto"]::before { background:var(--gold); }
-.diffrow button[data-val="duro"]::before { background:var(--accent2); }
-.diffrow button.sel { background: var(--card2); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
 
 .savebar { position:sticky; bottom:calc(92px + env(safe-area-inset-bottom, 0px)); margin-top:24px; z-index:5; }
 .savebtn { width:100%; min-height:50px; padding:12px; background: var(--accent); color:var(--accent-ink); font-weight:800; border:none; border-radius:16px; font-size:16px; box-shadow: 0 10px 30px rgba(198,244,50,0.18), 0 2px 8px rgba(0,0,0,0.4); }
@@ -204,9 +197,6 @@ input, select { font-family: inherit; }
 .hist-ex { font-size:13px; margin-bottom:10px; }
 .hist-ex .hexname { color:var(--text); font-weight:700; }
 .hist-ex .hexvals { color:var(--muted); margin-top:2px; font-variant-numeric: tabular-nums; }
-.hist-ex .hexdiff { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:4px; }
-.dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
-.dot.facile { background:#4ade80; } .dot.giusto { background:var(--gold); } .dot.duro { background:var(--accent2); }
 .empty-state { text-align:center; color:var(--muted); padding:48px 24px; font-size:14px; line-height:1.6; background:var(--card); border:1px dashed var(--border-strong); border-radius:var(--radius); }
 
 /* ---------- Charts ---------- */
@@ -231,7 +221,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.2";
+const APP_VERSION = "2.3";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -561,11 +551,6 @@ function renderDay(dayId) {
         ? simpleTimerHtml(day.id + "_e_" + i, deload ? reduceSeconds(ex.seconds) : ex.seconds, { sets: totalSets, rest: restSecs(ex), key, day: day.id })
         : simpleTimerHtml(day.id + "_e_" + i, 0, { restOnly: true, sets: totalSets, rest: restSecs(ex), key, day: day.id, fill: ex.reps })}
       <div class="logrow">${setsInputs}<span class="logtarget">${ex.seconds != null ? "Secondi" : "Ripetizioni"} per serie · target ${setTargetLabel}${isPistol ? " per gamba" : ""}</span></div>
-      <div class="diffrow" data-diffgroup="${key}">
-        <button data-act="set-diff" data-key="${key}" data-val="facile">Facile</button>
-        <button data-act="set-diff" data-key="${key}" data-val="giusto">Giusto</button>
-        <button data-act="set-diff" data-key="${key}" data-val="duro">Duro</button>
-      </div>
     </div>`;
   });
 
@@ -628,7 +613,6 @@ function renderHistory() {
           <div class="hist-ex">
             <div class="hexname">${escapeHtml(en.name)}</div>
             <div class="hexvals">Target: ${en.target} · Fatto: ${en.name === "Pistol squat" ? formatPistolHistory(en.values) : (en.values.filter(v => v !== null && v !== "").join(", ") || "—")}</div>
-            ${en.difficulty ? `<div class="hexdiff"><span class="dot ${en.difficulty}"></span>${en.difficulty === "facile" ? "Facile" : en.difficulty === "duro" ? "Duro" : "Giusto"}</div>` : ""}
           </div>`).join("")}
       </div>
     </div>`;
@@ -927,7 +911,6 @@ function timerReset(tid) {
 }
 
 // ============ Difficulty selection state (per exercise key, in-memory until save) ============
-const diffState = {};
 
 // ============ Event wiring ============
 function wireEvents() {
@@ -953,13 +936,6 @@ function onAction(e) {
   }
   else if (act === "timer-start") { timerToggle(t.dataset.tid); }
   else if (act === "timer-reset") { timerReset(t.dataset.tid); }
-  else if (act === "set-diff") {
-    const key = t.dataset.key, val = t.dataset.val;
-    diffState[key] = diffState[key] === val ? null : val;
-    const group = el.querySelector(`[data-diffgroup="${key}"]`);
-    group.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.val === diffState[key]));
-    if (getSessions().some(x => x.date === todayStr() && x.dayId === state.dayId)) autosaveIfToday();
-  }
   else if (act === "toggle-hist") {
     state.historyOpen[t.dataset.key] = !state.historyOpen[t.dataset.key];
     render();
@@ -993,7 +969,7 @@ function saveCurrentDay(dayId, silent) {
     const target = ex.seconds != null
       ? (deload ? reduceSeconds(ex.seconds) : ex.seconds) + '"'
       : (deload ? reduceSets(ex.sets) : ex.sets) + "×" + ex.reps;
-    return { key, name: ex.name, target, values, difficulty: diffState[key] || null };
+    return { key, name: ex.name, target, values, difficulty: null };
   });
   const note = document.getElementById("save-note");
   const hasAny = entries.some(en => en.values.some(v => v !== "" && v !== null));
@@ -1007,7 +983,7 @@ function saveCurrentDay(dayId, silent) {
     : "✓ Sessione salvata.";
 }
 
-// Modifiche manuali ai valori o alla difficoltà aggiornano la sessione di oggi.
+// Modifiche manuali ai valori aggiornano la sessione di oggi.
 function autosaveIfToday() {
   if (state.tab !== "day" || !state.dayId) return;
   saveCurrentDay(state.dayId, true);
@@ -1022,13 +998,8 @@ function prefillDay() {
       logInputs(en.key).forEach((inp, idx) => {
         if (en.values[idx] !== undefined && en.values[idx] !== "") inp.value = en.values[idx];
       });
-      if (en.difficulty && !diffState[en.key]) diffState[en.key] = en.difficulty;
     });
   }
-  Object.keys(diffState).forEach(k => {
-    const g = Array.from(el.querySelectorAll("[data-diffgroup]")).find(x => x.dataset.diffgroup === k);
-    if (g) g.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.val === diffState[k]));
-  });
   el.querySelectorAll('.timerbox[data-mode="rest"]').forEach(repSubUpdate);
 }
 
