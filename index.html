@@ -136,10 +136,15 @@ select.exsel { width:100%; padding:10px; background:var(--card); border:1px soli
 .chart-stats .stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:6px; padding:10px; text-align:center; }
 .chart-stats .stat .v { font-size:18px; font-weight:700; color:var(--accent); }
 .chart-stats .stat .l { font-size:10px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+.update-bar { position:fixed; left:12px; right:12px; bottom:calc(72px + env(safe-area-inset-bottom)); z-index:100; display:none; align-items:center; gap:10px; background:var(--card); border:1px solid var(--accent); border-radius:8px; padding:10px 12px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,0.5); }
+.update-bar.show { display:flex; }
+.update-bar span { flex:1; }
+.update-bar button { background:var(--accent); color:var(--bg); border:none; border-radius:6px; padding:7px 12px; font-weight:700; font-size:13px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div class="update-bar" id="updateBar"><span>Nuova versione disponibile</span><button id="updateBtn">Aggiorna</button></div>
 <script>
 const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria", "priorityLabel": "Muscle-up · Front Lever", "focus": "Le due skill di trazione più importanti nel giorno più fresco della settimana, dopo 2 giorni di riposo. Muscle-up per primo, a freschezza massima.", "warmup": [{"name": "Trazioni scapolari", "search": "scapular pull up", "note": "Appeso alla sbarra a braccia tese. Sali di pochi cm contraendo solo le scapole (abbassandole), senza piegare i gomiti.", "time": "10 rip."}, {"name": "Apertura elastico (band pull apart)", "search": "band pull apart", "note": "Elastico teso davanti al petto con le braccia stese. Lo apri portando le mani ai lati, contraendo le scapole. Senza elastico: simula il movimento.", "time": "15 rip."}, {"name": "Sospensione passiva alla sbarra", "search": "dead hang", "note": "Appeso alla sbarra a braccia tese, spalle alte (rilassate), corpo morto. Decomprime la colonna.", "time": "30 sec"}], "exercises": [{"name": "Bar muscle-up", "search": "strict bar muscle up", "sets": 5, "reps": 1, "seconds": null, "note": "PRIMA di tutto, a massima freschezza. Test: 3 rip ma ultime 2 sbilanciate sul braccio destro. Soluzione: 5 SINGOLE pulite, recupero 2-3 min tra una e l'altra. Ogni rep fresca = simmetrica. Fermati se senti che diventa storta.", "priority": true, "rack": true}, {"name": "One-leg front lever", "search": "one leg front lever rings", "sets": 4, "reps": null, "seconds": 12, "note": "Test: 15s bilanciato SX/DX, gamba piegata a 90°. Stimolo FL PRINCIPALE. Progressione: apri la gamba piegata verso lo straddle FL. Alterna SX/DX a ogni serie.", "priority": true, "rack": true}, {"name": "Chest-to-bar pull-up esplosivo", "search": "explosive chest to bar pullup", "sets": 4, "reps": 4, "seconds": null, "note": "Potenza di tirata per il muscle-up", "priority": false, "rack": true}, {"name": "Trazioni in false grip", "search": "false grip pullup rings", "sets": 3, "reps": 6, "seconds": null, "note": "Base per muscle-up agli anelli in futuro", "priority": false, "rack": true}, {"name": "Row declinate", "search": "decline row calisthenics", "sets": 3, "reps": 12, "seconds": null, "note": "Piedi a terra, inclinato in tirata finita — variante più leggera, accessorio dopo il lavoro pesante.", "priority": false, "rack": true}], "cooldown": [{"name": "Allungamento dorsali (appeso)", "search": "dead hang lat stretch", "note": "Appeso passivo alla sbarra, spalle rilassate verso l'alto, lasci che i dorsali si allunghino sotto al tuo peso.", "time": "30 sec"}, {"name": "Allungamento bicipite al muro", "search": "bicep stretch wall", "note": "In piedi di fianco a un muro, braccio teso indietro, palmo appoggiato al muro all'altezza della spalla. Ruoti il corpo via dal muro.", "time": "30 sec per lato"}, {"name": "Allungamento polsi", "search": "wrist flexor stretch", "note": "In ginocchio con palmi a terra e dita verso di te. Spingi indietro fino a sentire stiramento sulla parte interna dell'avambraccio.", "time": "30 sec"}, {"name": "Posizione del bambino con braccia tese", "search": "extended child pose", "note": "Posizione del bambino con braccia tese davanti, palmi a terra, spingi le ascelle verso il pavimento.", "time": "1 min"}], "equipment": "Rack necessario per tutta la sessione"}, {"id": "mar", "label": "Martedì", "title": "Core e Compressione", "priorityLabel": "V-sit · Pistol squat", "focus": "Focus unico: compressione attiva. 4 esercizi mirati. High L-sit tornerà quando compression hold sale a 4×15\". Cuscinetto di recupero dopo il lunedì pesante.", "warmup": [{"name": "Rotazioni anche", "search": "hip circles", "note": "In piedi, mani sui fianchi, disegna cerchi ampi con il bacino. Prima in un senso, poi nell'altro.", "time": "30 sec per senso"}, {"name": "Squat profondo tenuto", "search": "deep squat hold", "note": "Scendi in accosciata completa (sedere vicino alle caviglie), schiena dritta, talloni a terra. Resti fermo respirando.", "time": "30 sec"}, {"name": "Pike seduto (allungamento posteriore)", "search": "seated forward fold", "note": "Seduto a terra, gambe tese unite, ti pieghi in avanti cercando di toccare i piedi mantenendo la schiena lunga.", "time": "30 sec"}, {"name": "Pancake (gambe divaricate piegate)", "search": "pancake stretch", "note": "Seduto a terra con gambe divaricate il più possibile, ti pieghi in avanti con il busto cercando di portare il petto a terra.", "time": "45 sec"}], "exercises": [{"name": "Compression hold a terra", "search": "compression hold pike", "sets": 4, "reps": null, "seconds": 10, "note": "Seduto, gambe tese, palmi a terra all'altezza delle ginocchia: spingi giù e solleva le gambe più in alto possibile. Questa posizione chiude di più l'anca e fa lavorare i flessori. Quando diventa facile, sposta le mani verso i fianchi per più sfida.", "priority": true, "rack": false}, {"name": "Leg lift in L-sit (parallette)", "search": "L sit leg lift V sit", "sets": 5, "reps": 5, "seconds": null, "note": "Test: 7 rip max. Fai 5×5 STRICT con gambe tese, qualità prima del numero. Quando tutte e 5 pulite, sali a 5×6. Pausa 2s in alto se vuoi più stimolo V-sit.", "priority": true, "rack": false}, {"name": "Straddle L-sit", "search": "straddle L sit", "sets": 3, "reps": null, "seconds": 12, "note": "Sulle parallette. Qualità della protrazione, non durata massima.", "priority": true, "rack": false}, {"name": "Pistol squat", "search": "pistol squat", "sets": 4, "reps": 5, "seconds": null, "note": "Mantenimento. Recupero 60 sec.", "priority": false, "rack": false}], "cooldown": [{"name": "Pike seduto profondo", "search": "seated forward fold", "note": "Seduto, gambe tese unite, ti pieghi in avanti rilassato. Versione lenta e sostenuta per defaticare.", "time": "1 min"}, {"name": "Pancake profondo", "search": "pancake stretch", "note": "Versione lenta del pancake del warmup, ora rilassi e vai più giù.", "time": "1 min"}, {"name": "Affondo basso (allungamento iliaco)", "search": "low lunge hip flexor", "note": "Affondo profondo con ginocchio posteriore a terra. Spingi il bacino in avanti per sentire stiramento sul davanti della coscia posteriore.", "time": "30 sec per lato"}, {"name": "Allungamento femorale sdraiato", "search": "supine hamstring stretch", "note": "Sdraiato sulla schiena, alzi una gamba tesa e la tiri verso di te con le mani (o un asciugamano dietro al polpaccio).", "time": "30 sec per lato"}, {"name": "Allungamento gluteo (figura 4)", "search": "figure 4 stretch", "note": "Sdraiato sulla schiena, appoggi una caviglia sopra il ginocchio opposto (forma un 4), poi tiri la gamba sotto verso il petto.", "time": "30 sec per lato"}], "equipment": "Solo tappeto"}, {"id": "mer", "label": "Mercoledì", "title": "Spinta statica", "priorityLabel": "Planche · HSPU", "focus": "Le due spinte statiche a fresco, 48h dopo la trazione del lunedì. Tendini in estensione (polso/gomito) isolati dai giorni di trazione.", "warmup": [{"name": "Flessioni scapolari", "search": "scapular push up", "note": "In posizione di plank: braccia tese ferme, muovi solo le scapole avvicinandole e allontanandole (saliscendi del busto di pochi cm). Sveglia le scapole.", "time": "10 rip."}, {"name": "Mobilità polsi", "search": "wrist warm up", "note": "Rotazioni ampie dei polsi + allungamento appoggiando i palmi a terra in quadrupedia, prima dita in avanti poi indietro.", "time": "1 min"}, {"name": "Planche lean leggero", "search": "planche lean", "note": "Posizione plank, sposti il peso in avanti portando le spalle oltre i polsi. Solo al 50% dello sforzo, è pre-attivazione.", "time": "2×5\""}], "exercises": [{"name": "Planche lean", "search": "planche lean", "sets": 4, "reps": null, "seconds": 25, "note": "Test: 35s con polsi a 55cm dal muro (testa che sfiora). Obiettivo NON più tempo ma LEAN: ALLONTANA i polsi dal muro tenendo i capelli che sfiorano = braccia più inclinate = più lean = più difficile. Punta a tenere 25\" aumentando i cm oltre 55.", "priority": true, "rack": false}, {"name": "Tuck planche (parallette)", "search": "tuck planche parallettes", "sets": 3, "reps": null, "seconds": 8, "note": "ANELLO DEBOLE — priorità forma. Test: 8s con schiena bassa. Obiettivo: ALZARE IL BACINO sopra le spalle. Check: ① scapole protratte ② spalle davanti ai polsi ③ bacino alto. Meglio 8s con bacino alto che 10s con schiena bassa.", "priority": true, "rack": false}, {"name": "HSPU complete chest-to-wall", "search": "chest to wall HSPU", "sets": 4, "reps": 3, "seconds": null, "note": "Pezzo FORZA della verticale, a fresco. Test: 2 rip complete. HSPU COMPLETE petto al muro, discesa + risalita. Obiettivo salire a 4×4-5. Quando facili, allontana di poco il petto dal muro.", "priority": true, "rack": false}, {"name": "Pronated grip horizontal row", "search": "pronated horizontal row calisthenics", "sets": 4, "reps": 13, "seconds": null, "note": "Piedi su plyo box, orizzontale in tirata finita — variante più dura. Antagonista planche, bilancia il giorno di spinta.", "priority": false, "rack": true}], "cooldown": [{"name": "Allungamento petto al muro", "search": "wall pec stretch", "note": "In piedi di fianco a un muro, braccio steso indietro appoggiato al muro all'altezza della spalla. Ruoti il corpo verso il lato opposto fino a sentire stiramento sul petto.", "time": "30 sec per lato"}, {"name": "Allungamento polsi", "search": "wrist flexor stretch", "note": "In ginocchio, appoggi i palmi a terra con le dita rivolte verso le ginocchia. Spingi indietro fino a sentire stiramento sulla parte interna dell'avambraccio.", "time": "30 sec"}, {"name": "Allungamento spalla (braccio trasversale)", "search": "cross body shoulder stretch", "note": "In piedi, porti un braccio teso davanti al petto e con l'altro lo tiri verso di te all'altezza del gomito.", "time": "30 sec per lato"}, {"name": "Posizione del bambino", "search": "child pose", "note": "In ginocchio, sedere sui talloni, busto piegato in avanti con le braccia tese davanti a terra. Fronte appoggiata.", "time": "1 min"}], "equipment": "Rack solo per l'ultimo esercizio (row)"}, {"id": "gio", "label": "Giovedì", "title": "Trazione volume", "priorityLabel": "Back Lever · Front Lever 2°", "focus": "Advanced tuck back lever principale + secondo stimolo front lever, 72h dopo il FL del lunedì. Tendine bicipitale riposata dopo il mercoledì di spinta.", "warmup": [{"name": "Trazioni scapolari", "search": "scapular pull up", "note": "Appeso alla sbarra a braccia tese. Sali di pochi cm contraendo solo le scapole (abbassandole).", "time": "10 rip."}, {"name": "German hang (sospensione tedesca) agli anelli", "search": "german hang rings", "note": "Appeso agli anelli, fai un'inversione completa portando le gambe sopra la testa e oltre, fino a stare a testa in giù con le braccia tese dietro. Apre molto le spalle.", "time": "2×20\""}, {"name": "Skin the cat (rotazione completa) agli anelli", "search": "skin the cat", "note": "Dagli anelli, parti appeso normale, alzi le gambe e ruoti tutto il corpo all'indietro passando tra le braccia fino al german hang, poi torni indietro.", "time": "5 rip. lenti"}], "exercises": [{"name": "Advanced tuck back lever", "search": "advanced tuck back lever", "sets": 4, "reps": null, "seconds": 8, "note": "Lavoro principale del giorno — hai superato il tuck base, ora è qui che spingi. Obiettivo: aprire verso il tuck singolo quando 4×8\" è stabile.", "priority": true, "rack": true}, {"name": "One-leg front lever", "search": "one leg front lever rings", "sets": 4, "reps": null, "seconds": 12, "note": "Secondo stimolo FL della settimana, 72h dopo il lunedì. Gamba piegata a 90°, alterna SX/DX. Tienilo pulito: è richiamo, non cedimento.", "priority": true, "rack": true}, {"name": "Skin the cat", "search": "skin the cat rings", "sets": 4, "reps": 3, "seconds": null, "note": "Mobilità e forza spalle per back lever", "priority": false, "rack": true}, {"name": "L-sit pullup", "search": "L sit pullup", "sets": 4, "reps": 5, "seconds": null, "note": "Core attivo per tutta la serie", "priority": false, "rack": true}], "cooldown": [{"name": "Allungamento spalle (braccia dietro la schiena)", "search": "shoulder flexion behind back", "note": "In piedi, intrecci le mani dietro la schiena a braccia tese, poi sollevi le braccia tese verso l'alto.", "time": "30 sec"}, {"name": "Allungamento bicipite al muro", "search": "bicep stretch wall", "note": "In piedi di fianco a un muro, braccio teso indietro, palmo appoggiato al muro all'altezza della spalla. Ruoti il corpo via dal muro.", "time": "30 sec per lato"}, {"name": "German hang leggero", "search": "german hang rings", "note": "Versione meno profonda del german hang del warmup. Solo per decomprimere, non spingi a fondo.", "time": "20 sec"}, {"name": "Rotazione toracica (thread the needle)", "search": "thread the needle stretch", "note": "In quadrupedia, infili un braccio sotto al corpo verso il lato opposto fino a far appoggiare la spalla a terra, l'altro braccio resta su.", "time": "1 min"}], "equipment": "Rack necessario per tutta la sessione"}, {"id": "ven", "label": "Venerdì", "title": "Spinta volume + verticale", "priorityLabel": "Flessioni in verticale (HSPU)", "focus": "Volume di spinta a chiudere la settimana: eccentrica HSPU e accessori tricipite, planche in mantenimento. Il giorno più denso di tricipite scarica nel weekend.", "warmup": [{"name": "Allungamento spalle al muro", "search": "wall shoulder flexion stretch", "note": "In ginocchio davanti a un muro, gomiti appoggiati al muro all'altezza della testa, busto piegato in avanti. Spingi il petto verso terra.", "time": "30 sec"}, {"name": "Wrist circles + wrist stretches", "search": "wrist warmup calisthenics", "note": "", "time": "1 min"}, {"name": "Pike push up leggero", "search": "pike push up", "note": "Piedi a terra, anche piegate (forma a V rovesciata), abbassi la testa verso terra piegando le braccia. Versione facile da terra, è pre-attivazione.", "time": "5 rip."}], "exercises": [{"name": "Chest-to-wall handstand", "search": "chest to wall handstand", "sets": 4, "reps": null, "seconds": 30, "note": "Petto a parete, corpo dritto — è il tuo riferimento posturale. Costruisce stabilità sotto carico.", "priority": true, "rack": false}, {"name": "Chest-to-wall HSPU negative", "search": "chest to wall HSPU negative", "sets": 3, "reps": 4, "seconds": null, "note": "Negative al muro, discesa lentissima 5 sec. Costruisce la forza eccentrica che alimenta le HSPU complete del mercoledì.", "priority": true, "rack": false}, {"name": "Pike pushup box 60cm", "search": "elevated pike pushup", "sets": 3, "reps": 8, "seconds": null, "note": "Accessorio — range completo, testa tra le braccia.", "priority": false, "rack": false}, {"name": "Flessioni a diamante", "search": "diamond pushup", "sets": 3, "reps": 15, "seconds": null, "note": "Tricipiti — supporto diretto alle HSPU. A fine settimana: il weekend assorbe il DOMS.", "priority": false, "rack": false}, {"name": "Planche lean", "search": "planche lean", "sets": 4, "reps": null, "seconds": 20, "note": "Mantenimento, a fine sessione. Volume facile, niente massimali — la planche pesante è il mercoledì.", "priority": true, "rack": false}], "cooldown": [{"name": "Allungamento petto sulla porta", "search": "doorway chest stretch", "note": "In piedi davanti a una porta, avambracci appoggiati ai due lati dello stipite ad altezza spalla. Ti sporgi in avanti.", "time": "30 sec"}, {"name": "Allungamento tricipite sopra la testa", "search": "overhead tricep stretch", "note": "Un braccio sopra la testa con gomito piegato (mano dietro alla nuca), con l'altra mano spingi il gomito verso il centro.", "time": "30 sec per lato"}, {"name": "Allungamento polsi (avanti e indietro)", "search": "wrist stretch both", "note": "Braccio teso davanti: con l'altra mano tiri prima il palmo verso il basso (estensori), poi verso l'alto (flessori).", "time": "30 sec per lato"}, {"name": "Gatto-mucca", "search": "cat cow stretch", "note": "In quadrupedia: alternate arcuata della schiena verso l'alto (gatto, mento al petto) e incavata verso il basso (mucca, testa su).", "time": "1 min"}], "equipment": "Nessun rack — muro e tappeto"}];
 </script>
@@ -263,6 +268,7 @@ function render() {
   html += renderTabbar();
   el.innerHTML = html;
   wireEvents();
+  prefillDay();
   updateWake();
 }
 
@@ -365,14 +371,14 @@ function simpleTimerHtml(tid, secs, opts) {
   opts = opts || {};
   const restOnly = !!opts.restOnly;
   const sub = opts.sets
-    ? (restOnly ? "Recupero tra le serie" : `Serie 1/${opts.sets} · recupero ${fmtClock(opts.rest)}`)
+    ? (restOnly ? `Serie fatte 0/${opts.sets}` : `Serie 1/${opts.sets} · recupero ${fmtClock(opts.rest)}`)
     : "";
-  return `<div class="timerbox" data-timer="${tid}" data-secs="${secs}" data-prep="10" data-sets="${opts.sets || 1}" data-rest="${opts.rest || 0}" data-key="${opts.key || ""}" data-mode="${restOnly ? "rest" : "work"}">
+  return `<div class="timerbox" data-timer="${tid}" data-secs="${secs}" data-prep="10" data-sets="${opts.sets || 1}" data-rest="${opts.rest || 0}" data-key="${opts.key || ""}" data-day="${opts.day || ""}" data-fill="${opts.fill != null ? opts.fill : ""}" data-mode="${restOnly ? "rest" : "work"}">
     <div class="display">${fmtClock(restOnly ? opts.rest : secs)}</div>
     <div class="phase">${restOnly ? "Recupero" : "Pronto: 10s"}</div>
     <div class="sub">${sub}</div>
     <div class="controls">
-      <button data-act="timer-start" data-tid="${tid}">${restOnly ? "▶ Recupero" : "▶ Avvia"}</button>
+      <button data-act="timer-start" data-tid="${tid}">${restOnly ? "✔ Fatta · recupero" : "▶ Avvia"}</button>
       <button data-act="timer-reset" data-tid="${tid}">↺</button>
     </div>
   </div>`;
@@ -449,8 +455,8 @@ function renderDay(dayId) {
       </div>
       ${ex.note ? `<div class="note">${escapeHtml(ex.note)}</div>` : ""}
       ${ex.seconds != null
-        ? simpleTimerHtml(day.id + "_e_" + i, deload ? reduceSeconds(ex.seconds) : ex.seconds, { sets: totalSets, rest: restSecs(ex), key })
-        : simpleTimerHtml(day.id + "_e_" + i, 0, { restOnly: true, sets: totalSets, rest: restSecs(ex) })}
+        ? simpleTimerHtml(day.id + "_e_" + i, deload ? reduceSeconds(ex.seconds) : ex.seconds, { sets: totalSets, rest: restSecs(ex), key, day: day.id })
+        : simpleTimerHtml(day.id + "_e_" + i, 0, { restOnly: true, sets: totalSets, rest: restSecs(ex), key, day: day.id, fill: ex.reps })}
       <div class="logrow">${setsInputs}<span style="font-size:11px;color:var(--muted)">${ex.seconds != null ? "sec" : "rip"} · target ${setTargetLabel}${isPistol ? " per gamba" : ""}</span></div>
       <div class="diffrow" data-diffgroup="${key}">
         <button data-act="set-diff" data-key="${key}" data-val="facile">🟢 Facile</button>
@@ -631,6 +637,8 @@ function timerInit(box) {
     sets: parseInt(box.dataset.sets || "1", 10),
     rest, prep, restOnly,
     key: box.dataset.key || "",
+    day: box.dataset.day || "",
+    fill: box.dataset.fill || "",
     set: 0,
     phase: restOnly ? "rest" : "prep",
     left: restOnly ? rest : prep,
@@ -638,8 +646,34 @@ function timerInit(box) {
   };
 }
 
+// ---- log inputs helpers (registrazione automatica dei valori previsti)
+function logInputs(key) {
+  return Array.from(el.querySelectorAll("input[data-log]")).filter(i => i.dataset.log === key);
+}
+function nextEmptySet(key) {
+  const ins = logInputs(key).filter(i => !i.value);
+  return ins.length ? parseInt(ins[0].dataset.set, 10) : -1;
+}
+function setsDoneCount(key) {
+  const bySet = {};
+  logInputs(key).forEach(i => { bySet[i.dataset.set] = (bySet[i.dataset.set] !== false) && !!i.value; });
+  return Object.values(bySet).filter(Boolean).length;
+}
+function repSubUpdate(box) {
+  const sub = box.querySelector(".sub");
+  if (sub && box.dataset.mode === "rest" && box.dataset.key) {
+    sub.textContent = `Serie fatte ${setsDoneCount(box.dataset.key)}/${box.dataset.sets}`;
+  }
+}
+// Scrive il valore previsto nella serie (se vuota) e registra subito la sessione.
+function recordSet(t, setIdx, value) {
+  logInputs(t.key).filter(i => i.dataset.set === String(setIdx)).forEach(i => { if (!i.value) i.value = value; });
+  if (t.day) saveCurrentDay(t.day, true);
+}
+
 function timerBtnLabel(t) {
-  if (t.restOnly) return "▶ Recupero";
+  if (t.restOnly) return t.started && t.phase !== "done" ? "▶ Riprendi" : "✔ Fatta · recupero";
+  if (t.phase === "wait") return `▶ Serie ${t.set + 2}`;
   return t.started && t.phase !== "done" ? "▶ Riprendi" : "▶ Avvia";
 }
 
@@ -648,9 +682,8 @@ function timerRenderIdle(box, t) {
   box.querySelector(".display").textContent = fmtClock(t.restOnly ? t.rest : t.secs);
   box.querySelector(".phase").textContent = t.restOnly ? "Recupero" : `Pronto: ${t.prep}s`;
   const sub = box.querySelector(".sub");
-  if (sub && t.sets > 1 || (sub && !t.restOnly && box.dataset.key)) {
-    sub.textContent = t.restOnly ? "Recupero tra le serie" : `Serie 1/${t.sets} · recupero ${fmtClock(t.rest)}`;
-  }
+  if (sub && !t.restOnly && t.key) sub.textContent = `Serie 1/${t.sets} · recupero ${fmtClock(t.rest)}`;
+  repSubUpdate(box);
   box.querySelector('[data-act="timer-start"]').textContent = timerBtnLabel(t);
 }
 
@@ -658,24 +691,21 @@ function timerRender(box, t) {
   box.classList.toggle("prep", t.phase === "prep");
   box.classList.toggle("resting", t.phase === "rest");
   box.querySelector(".display").textContent = fmtClock(t.left);
-  box.querySelector(".phase").textContent =
-    { prep: "Preparati", work: "Lavoro", rest: "Recupero", done: "Fine" }[t.phase];
+  box.querySelector(".phase").textContent = t.phase === "wait"
+    ? `Pronto per la serie ${t.set + 2}`
+    : { prep: "Preparati", work: "Lavoro", rest: "Recupero", done: "Fine" }[t.phase];
   const sub = box.querySelector(".sub");
-  if (sub && !t.restOnly && box.dataset.key) {
-    sub.textContent = t.phase === "done" ? "Completato" : `Serie ${t.set + 1}/${t.sets} · recupero ${fmtClock(t.rest)}`;
+  if (sub && !t.restOnly && t.key) {
+    if (t.phase === "done") sub.textContent = "Completato";
+    else if (t.phase === "rest" || t.phase === "wait") sub.textContent = `Serie ${t.set + 1}/${t.sets} fatta`;
+    else sub.textContent = `Serie ${t.set + 1}/${t.sets}`;
   }
-  box.querySelector('[data-act="timer-start"]').textContent = t.running ? "⏸ Pausa" : timerBtnLabel(t);
-}
-
-// When a set's seconds run out, write them into that set's input (unless already filled).
-function autofillSet(t) {
-  if (!t.key || t.restOnly) return;
-  const inp = Array.from(el.querySelectorAll("[data-log]"))
-    .find(i => i.dataset.log === t.key && i.dataset.set === String(t.set) && !i.dataset.leg);
-  if (inp && !inp.value) {
-    inp.value = t.secs;
-    inp.dispatchEvent(new Event("input", { bubbles: true }));
-  }
+  repSubUpdate(box);
+  let label;
+  if (t.running && !t.restOnly && t.phase === "rest") label = `⏭ Serie ${t.set + 2}`;
+  else if (t.running) label = "⏸ Pausa";
+  else label = timerBtnLabel(t);
+  box.querySelector('[data-act="timer-start"]').textContent = label;
 }
 
 function timerFinish(box, t, msg) {
@@ -694,7 +724,8 @@ function timerTick(tid, box, t) {
   if (t.left > 0) {
     tick();
     if (t.phase === "work") announceExerciseSecond(t.left);
-    else if (t.left <= 3) speak(t.left);
+    else if (t.phase === "rest" && t.left <= 3) speak(t.left);
+    else if (t.phase === "prep" && t.left <= 3) speak(t.left);
     timerRender(box, t);
     return;
   }
@@ -703,25 +734,39 @@ function timerTick(tid, box, t) {
     t.phase = "work"; t.left = t.secs;
     beep(1400, 250, 0.2); speak("Via");
   } else if (t.phase === "work") {
-    autofillSet(t);
+    recordSet(t, t.set, t.secs);            // valore previsto registrato di default
     if (t.set + 1 >= t.sets) {
       timerFinish(box, t, "Fine");
     } else if (t.rest > 0) {
       t.phase = "rest"; t.left = t.rest;
       beep(600, 250, 0.2); speak("Recupero");
     } else {
-      t.set += 1; t.left = t.secs;
-      beep(1400, 250, 0.2); speak("Via");
+      timerWait(box, t, "Serie fatta");
     }
   } else if (t.phase === "rest") {
-    if (t.restOnly) {
-      timerFinish(box, t, "Fine recupero");
-    } else {
-      t.set += 1; t.phase = "work"; t.left = t.secs;
-      beep(1400, 250, 0.2); speak("Via");
-    }
+    if (t.restOnly) timerFinish(box, t, "Fine recupero");
+    else timerWait(box, t, "Recupero finito");   // niente ripartenza automatica
   }
   timerRender(box, t);
+}
+
+function timerWait(box, t, msg) {
+  clearInterval(t.interval);
+  t.running = false;
+  t.phase = "wait";
+  t.left = t.secs;
+  beep(1400, 250, 0.2);
+  speak(msg);
+}
+
+function timerStartNextSet(tid, box, t) {
+  clearInterval(t.interval);
+  t.set += 1;
+  t.phase = "prep"; t.left = t.prep;
+  t.running = true; t.started = true;
+  speak("Preparati");
+  timerRender(box, t);
+  t.interval = setInterval(() => timerTick(tid, box, t), 1000);
 }
 
 function timerToggle(tid) {
@@ -733,6 +778,9 @@ function timerToggle(tid) {
   let t = timers[tid];
   if (!t || t.phase === "done") t = timers[tid] = timerInit(box);
 
+  // Timer a secondi: il recupero è solo un riferimento, la serie successiva parte solo dal pulsante.
+  if (!t.restOnly && (t.phase === "rest" || t.phase === "wait")) { timerStartNextSet(tid, box, t); return; }
+
   if (t.running) {
     clearInterval(t.interval);
     t.running = false;
@@ -740,11 +788,19 @@ function timerToggle(tid) {
     return;
   }
 
-  t.running = true;
   if (!t.started) {
     t.started = true;
-    speak(t.restOnly ? "Recupero" : "Preparati");
+    if (t.restOnly) {
+      // Esercizio a ripetizioni: "Fatta" registra il numero previsto nella prima serie vuota.
+      const idx = nextEmptySet(t.key);
+      if (idx >= 0) recordSet(t, idx, t.fill);
+      if (nextEmptySet(t.key) === -1) { timerFinish(box, t, "Serie completate"); timerRender(box, t); return; }
+      speak("Recupero");
+    } else {
+      speak("Preparati");
+    }
   }
+  t.running = true;
   timerRender(box, t);
   t.interval = setInterval(() => timerTick(tid, box, t), 1000);
 }
@@ -789,6 +845,7 @@ function onAction(e) {
     diffState[key] = diffState[key] === val ? null : val;
     const group = el.querySelector(`[data-diffgroup="${key}"]`);
     group.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.val === diffState[key]));
+    if (getSessions().some(x => x.date === todayStr() && x.dayId === state.dayId)) autosaveIfToday();
   }
   else if (act === "toggle-hist") {
     state.historyOpen[t.dataset.key] = !state.historyOpen[t.dataset.key];
@@ -806,33 +863,57 @@ el.addEventListener("change", e => {
   if (e.target.matches('[data-act="chart-select"]')) {
     state.chartExKey = e.target.value;
     render();
+  } else if (e.target.matches("input[data-log]")) {
+    autosaveIfToday();
   }
 });
 
-function saveCurrentDay(dayId) {
+function saveCurrentDay(dayId, silent) {
   const day = DAYS.find(d => d.id === dayId);
   const deload = isDeloadActive();
   const entries = day.exercises.map(ex => {
     const key = exKey(dayId, ex.name);
-    const inputs = el.querySelectorAll(`input[data-log="${key}"]`);
-    const values = Array.from(inputs).map(i => i.value);
+    const values = logInputs(key).map(i => i.value);
     const target = ex.seconds != null
       ? (deload ? reduceSeconds(ex.seconds) : ex.seconds) + '"'
       : (deload ? reduceSets(ex.sets) : ex.sets) + "×" + ex.reps;
     return { key, name: ex.name, target, values, difficulty: diffState[key] || null };
   });
+  const note = document.getElementById("save-note");
   const hasAny = entries.some(en => en.values.some(v => v !== "" && v !== null));
   if (!hasAny) {
-    const note = document.getElementById("save-note");
-    if (note) note.textContent = "Inserisci almeno un valore prima di salvare.";
+    if (note && !silent) note.textContent = "Inserisci almeno un valore prima di salvare.";
     return;
   }
-  const existing = getSessions().find(s => s.date === todayStr() && s.dayId === dayId);
-  if (existing && !window.confirm("Hai già registrato una sessione oggi per questo giorno. Sovrascrivere?")) return;
   upsertSession({ date: todayStr(), dayId, deload, entries });
-  Object.keys(diffState).forEach(k => { if (k.startsWith(dayId + "::")) delete diffState[k]; });
-  const note = document.getElementById("save-note");
-  if (note) note.textContent = "✓ Sessione salvata.";
+  if (note) note.textContent = silent
+    ? "✓ Sessione registrata con i valori previsti — modifica i campi se diversi."
+    : "✓ Sessione salvata.";
+}
+
+// Modifiche manuali ai valori o alla difficoltà aggiornano la sessione di oggi.
+function autosaveIfToday() {
+  if (state.tab !== "day" || !state.dayId) return;
+  saveCurrentDay(state.dayId, true);
+}
+
+// Ripristina nella vista giorno i valori già registrati oggi (così l'autosalvataggio non li perde).
+function prefillDay() {
+  if (state.tab !== "day") return;
+  const sess = getSessions().find(s => s.date === todayStr() && s.dayId === state.dayId);
+  if (sess) {
+    sess.entries.forEach(en => {
+      logInputs(en.key).forEach((inp, idx) => {
+        if (en.values[idx] !== undefined && en.values[idx] !== "") inp.value = en.values[idx];
+      });
+      if (en.difficulty && !diffState[en.key]) diffState[en.key] = en.difficulty;
+    });
+  }
+  Object.keys(diffState).forEach(k => {
+    const g = Array.from(el.querySelectorAll("[data-diffgroup]")).find(x => x.dataset.diffgroup === k);
+    if (g) g.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.val === diffState[k]));
+  });
+  el.querySelectorAll('.timerbox[data-mode="rest"]').forEach(repSubUpdate);
 }
 
 render();
@@ -842,6 +923,25 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   });
 }
+
+// ============ Aggiornamenti ============
+// Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
+const APP_VERSION = "2026-10-03.1";
+async function checkForUpdate() {
+  try {
+    const res = await fetch("index.html?check=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return;
+    const m = (await res.text()).match(/const APP_VERSION = "([^"]+)"/);
+    if (m && m[1] !== APP_VERSION) document.getElementById("updateBar").classList.add("show");
+  } catch (e) {}
+}
+document.getElementById("updateBtn").addEventListener("click", () => {
+  autosaveIfToday();
+  location.reload();
+});
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkForUpdate(); });
+window.addEventListener("load", checkForUpdate);
+setInterval(checkForUpdate, 5 * 60 * 1000);
 
 </script>
 </body>
