@@ -231,7 +231,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.1";
+const APP_VERSION = "2.2";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -1213,10 +1213,7 @@ async function cloudLogin() {
   if (!email) return;
   const { error } = await cloud.client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
   if (error) { alert("Invio non riuscito: " + error.message); return; }
-  const code = (window.prompt("Ti ho mandato un'email.\nInserisci qui il codice ricevuto, oppure apri il link nell'email da questo dispositivo.") || "").trim();
-  if (!code) return;
-  const res = await cloud.client.auth.verifyOtp({ email, token: code, type: "email" });
-  if (res.error) alert("Codice non valido: " + res.error.message);
+  alert("Ti ho mandato un'email: apri il link da questo telefono per completare l'accesso.");
 }
 
 async function cloudLogout() {
