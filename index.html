@@ -238,7 +238,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.6";
+const APP_VERSION = "2.7";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -749,14 +749,22 @@ function timerInit(box) {
   const restOnly = box.dataset.mode === "rest";
   const rest = parseInt(box.dataset.rest || "0", 10);
   const prep = parseInt(box.dataset.prep || "10", 10);
+  const sets = parseInt(box.dataset.sets || "1", 10);
+  const key = box.dataset.key || "";
+  // Timer a secondi: riparte dalla prima serie non ancora registrata, non dalla prima in assoluto.
+  let set = 0;
+  if (!restOnly && key) {
+    const next = nextEmptySet(key);
+    set = next >= 0 ? next : sets - 1;
+  }
   return {
     secs: parseInt(box.dataset.secs, 10) || 0,
-    sets: parseInt(box.dataset.sets || "1", 10),
+    sets,
     rest, prep, restOnly,
-    key: box.dataset.key || "",
+    key,
     day: box.dataset.day || "",
     fill: box.dataset.fill || "",
-    set: 0,
+    set,
     phase: restOnly ? "rest" : "prep",
     left: restOnly ? rest : prep,
     interval: null, running: false, started: false
@@ -799,7 +807,9 @@ function timerRenderIdle(box, t) {
   box.querySelector(".display").textContent = fmtClock(t.restOnly ? t.rest : t.secs);
   box.querySelector(".phase").textContent = t.restOnly ? "Recupero" : `Pronto: ${t.prep}s`;
   const sub = box.querySelector(".sub");
-  if (sub && !t.restOnly && t.key) sub.textContent = `Serie 1/${t.sets} · recupero ${fmtClock(t.rest)}`;
+  if (sub && !t.restOnly && t.key) sub.textContent = nextEmptySet(t.key) === -1
+    ? `Serie fatte ${t.sets}/${t.sets}`
+    : `Serie ${t.set + 1}/${t.sets} · recupero ${fmtClock(t.rest)}`;
   repSubUpdate(box);
   box.querySelector('[data-act="timer-start"]').textContent = timerBtnLabel(t);
 }
@@ -1032,6 +1042,13 @@ function prefillDay() {
     });
   }
   el.querySelectorAll('.timerbox[data-mode="rest"]').forEach(repSubUpdate);
+  // Timer a secondi: allinea il contatore alle serie già registrate oggi.
+  el.querySelectorAll('.timerbox[data-mode="work"][data-key]:not([data-key=""])').forEach(box => {
+    const tid = box.dataset.timer;
+    if (timers[tid] && timers[tid].started && timers[tid].phase !== "done") return;
+    if (timers[tid]) clearInterval(timers[tid].interval);
+    timerRenderIdle(box, timers[tid] = timerInit(box));
+  });
 }
 
 // ============ Cloud (Supabase) ============
