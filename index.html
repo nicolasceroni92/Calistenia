@@ -60,11 +60,7 @@ input, select { font-family: inherit; }
   color: var(--text); font-size:14px; font-weight:650; font-weight:700; text-align:left;
 }
 .deload-toggle .dt-sub { display:block; font-size:12px; font-weight:400; color:var(--muted); margin-top:1px; }
-.switch { flex:none; width:44px; height:26px; border-radius:999px; background:#2a2f3a; position:relative; transition:background .2s; }
-.switch::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .2s; }
 .deload-toggle.active { background: var(--accent2-soft); border-color: rgba(255,107,107,0.35); }
-.deload-toggle.active .switch { background: var(--accent2); }
-.deload-toggle.active .switch::after { transform: translateX(18px); }
 .deload-meta { display:flex; align-items:center; justify-content:flex-end; gap:16px; margin-top:8px; padding:0 4px; font-size:12px; }
 .deload-meta a { color:var(--accent); font-size:12px; font-weight:600; text-decoration:none; cursor:pointer; }
 .deload-meta a.muted-link { color: var(--muted); }
@@ -238,11 +234,10 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.12";
+const APP_VERSION = "2.13";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
-const LS_DELOAD_OVERRIDE = "ct_deload_override";
 const LS_SESSIONS = "ct_sessions";
 const DELOAD_CYCLE_WEEKS = 5;
 
@@ -271,21 +266,13 @@ function getWeekInfo() {
   const { weekNumber, weekInCycle } = weekInfoFor(localTodayStr());
   return { startStr: getCycleStartDate(), weekNumber, weekInCycle, cycleLength: DELOAD_CYCLE_WEEKS, isDeloadWeek: weekInCycle === DELOAD_CYCLE_WEEKS };
 }
-// L'impostazione manuale vale solo per la settimana in cui è stata fatta ("true|12"): poi si torna all'automatico.
-function getDeloadOverride() {
-  const [v, week] = (lsGet(LS_DELOAD_OVERRIDE) || "").split("|");
-  if (Number(week) !== getWeekInfo().weekNumber) return null;
-  if (v === "true") return true;
-  if (v === "false") return false;
-  return null;
-}
-function setDeloadOverride(v) {
-  if (v === null) { try { localStorage.removeItem(LS_DELOAD_OVERRIDE); } catch (e) {} }
-  else lsSet(LS_DELOAD_OVERRIDE, (v ? "true" : "false") + "|" + getWeekInfo().weekNumber);
-}
-function isDeloadActive() {
-  const o = getDeloadOverride();
-  return o === null ? getWeekInfo().isDeloadWeek : o;
+function isDeloadActive() { return getWeekInfo().isDeloadWeek; }
+// Lunedì della prossima settimana di scarico (o di quella in corso)
+function nextDeloadMonday() {
+  const wi = getWeekInfo();
+  const d = new Date(getCycleStartDate() + "T00:00:00");
+  d.setDate(d.getDate() - (d.getDay() + 6) % 7 + (wi.weekNumber + DELOAD_CYCLE_WEEKS - wi.weekInCycle - 1) * 7);
+  return d;
 }
 function reduceSeconds(sec) { return Math.max(5, Math.round(sec * 0.7)); }
 function reduceSets(sets) { return Math.max(1, Math.round(sets / 2)); }
@@ -396,8 +383,8 @@ document.addEventListener("visibilitychange", updateWake);
 function renderTopBar() {
   const wi = getWeekInfo();
   const deload = isDeloadActive();
-  const override = getDeloadOverride();
-  const forced = override !== null && override !== wi.isDeloadWeek;
+  const nd = nextDeloadMonday();
+  const ndStr = nd.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
   return `
   <div class="topbar">
     <div>
@@ -406,12 +393,10 @@ function renderTopBar() {
     </div>
     <div class="version">v${APP_VERSION}</div>
   </div>
-  <button class="deload-toggle ${deload ? "active" : ""}" data-act="toggle-deload">
-    <span>${deload ? "Settimana di scarico attiva" : "Settimana di scarico"}<span class="dt-sub">${forced ? "Impostata manualmente" : "Automatica ogni " + wi.cycleLength + "ª settimana del ciclo"}</span></span>
-    <span class="switch"></span>
-  </button>
+  <div class="deload-toggle ${deload ? "active" : ""}">
+    <span>${deload ? "Settimana di scarico attiva" : "Settimana di carico"}<span class="dt-sub">${deload ? "Automatica: ogni " + wi.cycleLength + "ª settimana del ciclo" : "Prossimo scarico: settimana del " + ndStr}</span></span>
+  </div>
   <div class="deload-meta">
-    ${override !== null ? `<a data-act="deload-auto">Torna automatico</a>` : ""}
     <a class="muted-link" data-act="set-cycle-start">Imposta inizio ciclo</a>
   </div>
   ${deload ? `<div class="deload-rules"><b>Regole di scarico</b>Serie dimezzate sugli esercizi a ripetizioni, tenute isometriche ridotte del 30% — già applicato qui sotto. Nessun tentativo massimale né record: fermati con 2-3 ripetizioni di margine. Recuperi pieni. Ogni 5ª settimana è scarico automatico — torni più forte, non più debole.</div>` : ""}
@@ -974,12 +959,6 @@ function onAction(e) {
   }
   else if (act === "open-day") { state.dayId = t.dataset.day; state.tab = "day"; render(); }
   else if (act === "back-week") { state.tab = "week"; render(); }
-  else if (act === "toggle-deload") {
-    const cur = isDeloadActive();
-    setDeloadOverride(!cur);
-    render();
-  }
-  else if (act === "deload-auto") { setDeloadOverride(null); render(); }
   else if (act === "set-cycle-start") {
     const input = window.prompt("Data di inizio ciclo (AAAA-MM-GG):", getWeekInfo().startStr);
     if (input && /^\d{4}-\d{2}-\d{2}$/.test(input)) { setCycleStartDate(input); render(); }
@@ -1392,7 +1371,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const FLAG = "ct_fix_deload_20261102";
   if (lsGet(FLAG)) return;
   if (getCycleStartDate() === "2026-09-29") setCycleStartDate("2026-10-05");
-  setDeloadOverride(null);
+  try { localStorage.removeItem("ct_deload_override"); } catch (e) {}
   lsSet(FLAG, "1");
 })();
 
