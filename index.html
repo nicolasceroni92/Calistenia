@@ -238,7 +238,7 @@ const DAYS = [{"id": "lun", "label": "Lunedì", "title": "Trazione prioritaria",
 </script>
 <script>
 // Incrementare APP_VERSION a ogni pubblicazione: l'app aperta confronta la sua versione con quella online.
-const APP_VERSION = "2.11";
+const APP_VERSION = "2.12";
 
 // ============ Storage helpers ============
 const LS_CYCLE = "ct_cycle_start";
@@ -255,24 +255,33 @@ function getCycleStartDate() {
   return s;
 }
 function setCycleStartDate(dateStr) { lsSet(LS_CYCLE, dateStr); }
-function getWeekInfo() {
-  const startStr = getCycleStartDate();
-  const start = new Date(startStr + "T00:00:00");
-  const now = new Date();
-  const diffDays = Math.max(0, Math.floor((now - start) / 86400000));
+// Le settimane del ciclo vanno da lunedì a domenica (contate dal lunedì della settimana di inizio ciclo).
+function weekInfoFor(dateStr) {
+  const start = new Date(getCycleStartDate() + "T00:00:00");
+  start.setDate(start.getDate() - (start.getDay() + 6) % 7);
+  const diffDays = Math.max(0, Math.round((new Date(dateStr + "T00:00:00") - start) / 86400000));
   const weekNumber = Math.floor(diffDays / 7) + 1;
-  const weekInCycle = ((weekNumber - 1) % DELOAD_CYCLE_WEEKS) + 1;
-  return { startStr, weekNumber, weekInCycle, cycleLength: DELOAD_CYCLE_WEEKS, isDeloadWeek: weekInCycle === DELOAD_CYCLE_WEEKS };
+  return { weekNumber, weekInCycle: ((weekNumber - 1) % DELOAD_CYCLE_WEEKS) + 1 };
 }
+function localTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function getWeekInfo() {
+  const { weekNumber, weekInCycle } = weekInfoFor(localTodayStr());
+  return { startStr: getCycleStartDate(), weekNumber, weekInCycle, cycleLength: DELOAD_CYCLE_WEEKS, isDeloadWeek: weekInCycle === DELOAD_CYCLE_WEEKS };
+}
+// L'impostazione manuale vale solo per la settimana in cui è stata fatta ("true|12"): poi si torna all'automatico.
 function getDeloadOverride() {
-  const v = lsGet(LS_DELOAD_OVERRIDE);
+  const [v, week] = (lsGet(LS_DELOAD_OVERRIDE) || "").split("|");
+  if (Number(week) !== getWeekInfo().weekNumber) return null;
   if (v === "true") return true;
   if (v === "false") return false;
   return null;
 }
 function setDeloadOverride(v) {
   if (v === null) { try { localStorage.removeItem(LS_DELOAD_OVERRIDE); } catch (e) {} }
-  else lsSet(LS_DELOAD_OVERRIDE, v ? "true" : "false");
+  else lsSet(LS_DELOAD_OVERRIDE, (v ? "true" : "false") + "|" + getWeekInfo().weekNumber);
 }
 function isDeloadActive() {
   const o = getDeloadOverride();
@@ -1076,12 +1085,6 @@ function enqueueSync(op, date, dayId) {
   syncTimer = setTimeout(flushSync, 1500);
 }
 
-function weekInfoFor(dateStr) {
-  const start = new Date(getCycleStartDate() + "T00:00:00");
-  const diffDays = Math.max(0, Math.floor((new Date(dateStr + "T00:00:00") - start) / 86400000));
-  const weekNumber = Math.floor(diffDays / 7) + 1;
-  return { weekNumber, weekInCycle: ((weekNumber - 1) % DELOAD_CYCLE_WEEKS) + 1 };
-}
 
 function exerciseByKey(dayId, key) {
   const day = DAYS.find(d => d.id === dayId);
@@ -1380,6 +1383,16 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     saveSessions(list);
     enqueueSync("save", sess.date, sess.dayId);
   }
+  lsSet(FLAG, "1");
+})();
+
+// Correzione una tantum (v2.12): lo scarico del 27/10 è saltato. Il ciclo riparte dal 5/10 (lunedì),
+// così la settimana 2-8 novembre è la 5ª (scarico automatico) e il ciclo nuovo inizia lunedì 9.
+(function fixMissedDeload() {
+  const FLAG = "ct_fix_deload_20261102";
+  if (lsGet(FLAG)) return;
+  if (getCycleStartDate() === "2026-09-29") setCycleStartDate("2026-10-05");
+  setDeloadOverride(null);
   lsSet(FLAG, "1");
 })();
 
